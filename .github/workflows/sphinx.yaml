@@ -30,7 +30,7 @@ jobs:
       # Build Sphinx Documentation
       - name: Build Documentation
         run: |
-          sphinx-build docs/src _build/html
+          sphinx-build docs/source _build/html
 
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
