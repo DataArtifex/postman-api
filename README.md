@@ -73,7 +73,18 @@ Feel free to replace `<repository-url>` and `<repository-directory>` with the ac
 
 To use this package, you must have a Postman account and [API key](https://learning.postman.com/docs/developer/postman-api/authentication/).
 
-See [Documentation](https://dataartifex.github.io/postman-api/).
+*Until this repository is made public, you must generate the Sphinx documentation locally...*
+
+To do so, first ensure the relevant Sphinx packages are installed in your Python environment:
+```
+pip install sphinx sphinx sphinx-rtd-theme sphinx-copybutton myst-parser
+```
+
+Then navigate to the `docs` directory and call `make`.
+
+If you do not have `make` installed in your system you can alternatively call `sphinx-build -M source build`
+
+Upon completion, open the `docs/build/index.html` file in your browser.
 
  
 ## Roadmap
