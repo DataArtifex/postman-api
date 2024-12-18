@@ -25,7 +25,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install sphinx sphinx_rtd_theme  # Add other Sphinx dependencies here
+          pip install sphinx sphinx_rtd_theme sphinx-copybutton # Add other Sphinx dependencies here
           
       # Build Sphinx Documentation
       - name: Build Documentation
