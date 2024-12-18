@@ -1,7 +1,5 @@
 """
-Classes and helpers to interact with the Postman API, workspaces, collections, folders, and realted resources.
-
-
+Classes and helpers to interact with the Postman API, workspaces, collections, folders, and related resources.
 """
 from datetime import datetime
 from enum import Enum
@@ -980,7 +978,7 @@ class DataProductCollectionManager(CollectionManager):
         pass
     
     
-class Foldermanager:
+class FolderManager:
     """Helper to interact with an existing Postman folder"""
 
     _id: str  # Postman folder id
@@ -1009,7 +1007,6 @@ class Foldermanager:
         """Refreshes the cached collection data from the API"""
         data = self.get_collection()
         self._data = data["collection"]
-
 
     def create_folder(self, name: str, description: str = None, ):
         return self._api.create_folder(self._id, name, description, self.id)

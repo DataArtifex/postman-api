@@ -5,14 +5,17 @@ Based on the schema v2.1.0 (https://schema.postman.com/)
 Can generate a collection from scratch or load from JSON.
 
 Tips:
+
 - When publishing a collection through the API, make sure the info/_postman_id is not set
 
 Known issues:
+
 - Properties with a '-' not currently supported as they are not a valid Python class/field name
   Examples: auth-attribute, proxy-config, protocol-profile-behavior
   --> need to implement a rename in json serializer / deserializer if needed
 
 References:
+
 - https://realpython.com/python-data-classes
 - https://stackoverflow.com/questions/3768895/how-to-make-a-class-json-serializable
 - https://levelup.gitconnected.com/how-to-deserialize-json-to-custom-class-objects-in-python-d8b92949cd3b

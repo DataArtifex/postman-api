@@ -1,12 +1,12 @@
 Postman Collection
 ==================
 
-Importing or exporting Postman Collections is based on the `Postman Collection schema https://schema.postman.com/`_ JSON specification.
+Importing or exporting Postman Collections is based on the `Postman Collection schema <https://schema.postman.com/>`_ JSON specification.
 This package includes Python classes that can be used to programmatically interact with this model and serialize/deserialize to JSON.
 
-The initial implementation used traditional Python `Data Classes https://docs.python.org/3/library/dataclasses.html`_.
+The initial implementation used traditional Python `Data Classes <https://docs.python.org/3/library/dataclasses.html>`_.
 
-The package is being rewritten using `Pydantic https://docs.pydantic.dev/latest/`_ to strengthen features/validation and facilitate integration with other packages and frameworks, particularly LangChain.
+The package is being rewritten using `Pydantic <https://docs.pydantic.dev/latest/>`_ to strengthen features/validation and facilitate integration with other packages and frameworks, particularly LangChain.
 
 
 Create a collection from scratch
