@@ -1,4 +1,4 @@
-# Postman
+# Postman API
 
 [![PyPI - Version](https://img.shields.io/pypi/v/hatch-foo.svg)](https://pypi.org/project/hatch-foo)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hatch-foo.svg)](https://pypi.org/project/hatch-foo)
@@ -8,8 +8,21 @@
 
 ## Overview
 
-This generic project faciliates interaction with the Postman API
+This generic project facilitates interaction with the Postman API. It is being released independently of the Data Artifex Postman Toolit package to allow its use by any developer working with Postman,
 
+The package provides the following classes:
+
+- PostmanApi: for direct access to the Postman API features. Takes a Postman API key as input.
+- WorkspaceManager: To work with an existing workspace. Takes a PostmanApi and workspace identifier as input.
+- CollectionManager: to work with an existing collection. Takes a WorkspaceManager and collection identifier as input.
+
+Additional classes will be implemented to manage requests, folders, and other resources.
+
+This package also includes Python classes to read/write Postman collections based on the 2.1 schema. The initial implementation leverages Python data classes. But this is being transitioned into Pydantic-based classes to strengthen features/validation and facilitate integration with other packages and frameworks.
+ 
+An optional feature is under development to facilitate [tools calling](https://python.langchain.com/docs/concepts/tool_calling/) from LangChain / LangGraph.
+
+This package is a component of the Data Artifex project.
 
 ## Installation
 
@@ -38,6 +51,11 @@ In the meantime, you can install the package locally by following these steps:
    pip install -e .
    ```
 
+   To install the LangChain/LangGraph integration:
+   ```bash
+   pip install -e .[langchain]
+   ```
+
 ### Installing Dependencies
 
 To install the required dependencies, execute the following command:
@@ -46,15 +64,18 @@ To install the required dependencies, execute the following command:
 pip install -r requirements.txt
 ```
 
-Make sure you are in the project's root directory when running these commands.
+Ensure you are in the project's root directory when running these commands.
 
 Feel free to replace `<repository-url>` and `<repository-directory>` with the actual URL and directory name of your project. This enhanced version provides clear instructions and formatting to guide users through the installation process effectively.
 
- 
+
 ## Usage
 
-...
+To use this package, you must have a Postman account and [API key](https://learning.postman.com/docs/developer/postman-api/authentication/).
 
+See [Documentation](https://dataartifex.github.io/postman-api/).
+
+ 
 ## Roadmap
 
 ...

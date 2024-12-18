@@ -1,10 +1,12 @@
-from datetime import datetime
-from functools import cache
-import os
-
-import pytest
 from dartfx.postmanapi import postman
 
+from datetime import datetime
+import dotenv as env
+from functools import cache
+import os
+import pytest
+
+env.load_dotenv()
 
 def get_api() -> postman.PostmanApi:
     api = postman.PostmanApi(os.environ.get('POSTMAN_API_KEY'))

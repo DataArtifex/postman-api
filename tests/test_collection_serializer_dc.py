@@ -10,6 +10,7 @@ def get_output_dir():
 def test_hello_world():
     # Collection
     collection = pc.Collection()
+    print(collection)
     collection.info.name="Hello World"
     # Item
     item = pc.Item(name="Hello World")
@@ -20,6 +21,6 @@ def test_hello_world():
     request.add_header("Content-Type", "application/json")
     item.request = request
     # save
-    filename = os.path.join(get_output_dir(), "hello_world.json")
+    filename = os.path.join(get_output_dir(), "hello_world.dc.json")
     collection.save(filename)
     assert collection.info.name == "Hello World"

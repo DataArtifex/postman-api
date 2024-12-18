@@ -38,7 +38,7 @@ class PostmanApi:
     # CORE HTTP REQUESTS
     #
     def request(self, method, endpoint, description, headers={}, success=200, **kwargs):
-        """Call the Postman API"""
+        """Call the Postman API."""
         url = f"https://api.getpostman.com/{endpoint}"
         # prepare headers
         headers = {
@@ -56,31 +56,31 @@ class PostmanApi:
             raise PostmanApiError(description, url, response.status_code, response)
 
     def delete_request(self, endpoint, description, headers={}, success=200, **kwargs):
-        """Call the Postman API using the DEL method"""
+        """Call the Postman API using the DEL method."""
         return self.request(
             "delete", endpoint, description, headers={}, success=200, **kwargs
         )
 
     def get_request(self, endpoint, description, headers={}, success=200, **kwargs):
-        """Call the Postman API using the GET method"""
+        """Call the Postman API using the GET method."""
         return self.request(
             "get", endpoint, description, headers={}, success=200, **kwargs
         )
 
     def post_request(self, endpoint, description, headers={}, success=200, **kwargs):
-        """Call the Postman API using the POST method"""
+        """Call the Postman API using the POST method."""
         return self.request(
             "post", endpoint, description, headers={}, success=200, **kwargs
         )
 
     def patch_request(self, endpoint, description, headers={}, success=200, **kwargs):
-        """Call the Postman API using the PATCH method"""
+        """Call the Postman API using the PATCH method."""
         return self.request(
             "patch", endpoint, description, headers={}, success=200, **kwargs
         )
 
     def put_request(self, endpoint, description, headers={}, success=200, **kwargs):
-        """Call the Postman API using the PUT method"""
+        """Call the Postman API using the PUT method."""
         return self.request(
             "put", endpoint, description, headers={}, success=200, **kwargs
         )
@@ -95,7 +95,7 @@ class PostmanApi:
         collectionSchemaUrl="https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         variables=None,
     ) -> str:
-        """Create a blank Postman collection.
+        """Create a new/blank Postman collection.
 
         Use import_collection to create from a dictionary.
 
@@ -483,7 +483,7 @@ class PostmanApi:
         data = response.json()
         return data["workspace"]["id"]
 
-    def get_workspaces(self, type: str = None, created_by: str = None) -> list:
+    def get_workspaces(self, type: str = None, created_by: str = None) -> list[dict]:
         params = {}
         if type:
             params["type"] = type
@@ -626,18 +626,43 @@ class WorkspaceManager:
         """The Postman API object associated with this workspace"""
         return self._api
 
-
+    #
+    # COLLECTIONS
+    #
     def create_collection(self, name, collectionSchemaUrl="https://schema.getpostman.com/json/collection/v2.1.0/collection.json"):
         """Helper to create a collection for this workspace."""
         return self.postman_api.create_collection(self.id, name, collectionSchemaUrl)
 
-    def find_collection_id(self, collection_name: str):
+    def delete_collection(self, collection_id: str):
+        """Helper to delete a collection from this workspace."""
+        return self.postman_api.delete_collection(self.id, collection_id)
+
+    def get_collection_id_by_name(self, collection_name: str):
         """Find a collection ID by name."""
         if self.collections: # check for empty workspace
             for collection in self.collections:
                 if collection["name"] == collection_name:
                     return collection["id"]
+    
+    def replace_collection(self, collection_id: str, collection: dict):
+        """Helper to replace a collection in this workspace."""
+        return self.postman_api.replace_collection(self.id, collection_id, collection)
+    
+    def import_collection(self, collection: dict, replace: bool = False):
+        """Import a Postman collection in this workspace"""
+        collection_info = collection.get("info")    
+        collection_name = collection_info.get("name")
+        collection_id = self.get_collection_id_by_name(collection_name)
+        if collection_id and replace:
+            self.postman_api.replace_collection(collection_id, collection)
+        else:
+            collection_id = self.postman_api.import_collection(self._id, collection)
+        self.refresh_workspace()
+        return collection_id
 
+    #
+    # VARIABLES
+    #
     def get_global_variables(self):
         """Get the workspace global variables"""
         response = self._api.get_request(
@@ -656,6 +681,9 @@ class WorkspaceManager:
         logging.warning("unset_global_variable not implemented.")
         return
 
+    #
+    # WORKSPACE
+    #
     def get_workspace(self):
         """Get the workspace information"""
         response = self._api.get_request(
@@ -675,18 +703,6 @@ class WorkspaceManager:
     def get_collection(self, collection_id) -> dict:
         """Proxy to Postman API get_collection method."""
         return self.postman_api.get_collection(collection_id)
-
-    def import_collection(self, collection: dict, replace: bool = False):
-        """Import a Postman collection in this workspace"""
-        collection_info = collection.get("info")    
-        collection_name = collection_info.get("name")
-        collection_id = self.find_collection_id(collection_name)
-        if collection_id and replace:
-            self.postman_api.replace_collection(collection_id, collection)
-        else:
-            collection_id = self.postman_api.import_collection(self._id, collection)
-        self.refresh_workspace()
-        return collection_id
 
     def refresh_workspace(self):
         """Refresh the workspace data from the API"""
@@ -902,9 +918,7 @@ class CollectionManager:
 
 
 class DataProductCollectionManager(CollectionManager):
-    """Helper to interact with a Postman collection specializing in data.
-    
-    
+    """Helper to interact with a Postman collection specializing in data.    
     """
 
     _dartfx_variable_name: str

@@ -24,6 +24,13 @@ classifiers = [
 ]
 dependencies = []
 
+
+[project.optional-dependencies]
+langchain = [
+  "langchain>=0.3"
+]
+
+
 [project.urls]
 Documentation = "https://github.com/DataArtifex/postman-api#readme"
 Issues = "https://github.com/DataArtifex/postman-api/issues"
@@ -87,3 +94,6 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = "src"

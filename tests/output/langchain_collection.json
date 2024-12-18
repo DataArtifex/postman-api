@@ -1,0 +1,48 @@
+{
+    "info": {
+        "name": "Get City Weather",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": "Get the weather of a city using OpenWeatherMap API",
+        "version": {
+            "major": 1,
+            "minor": 0,
+            "patch": 0
+        }
+    },
+    "item": [
+        {
+            "request": {
+                "url": {
+                    "raw": "http://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY",
+                    "protocol": "http",
+                    "host": [
+                        "api",
+                        "openweathermap",
+                        "org"
+                    ],
+                    "path": [
+                        "data",
+                        "2.5",
+                        "weather"
+                    ],
+                    "query": [
+                        {
+                            "key": "q",
+                            "value": "London"
+                        },
+                        {
+                            "key": "appid",
+                            "value": "YOUR_API_KEY"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "description": {
+                    "content": "Get the weather of a city",
+                    "type": "text"
+                }
+            },
+            "name": "Get City Weather"
+        }
+    ]
+}
