@@ -22,12 +22,15 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "requests>=2"
+]
 
 
 [project.optional-dependencies]
 langchain = [
-  "langchain>=0.3"
+  "langchain>=0.3",
+  "pydantic>=2"
 ]
 
 

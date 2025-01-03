@@ -11,16 +11,9 @@ Tips:
 Known issues:
 
 - Properties with a '-' not currently supported as they are not a valid Python class/field name
-  Examples: auth-attribute, proxy-config, protocol-profile-behavior
+  Examples: auth-attribute, proxy-config, protocol-profile-behavior.
   --> need to implement a rename in json serializer / deserializer if needed
 
-References:
-
-- https://realpython.com/python-data-classes
-- https://stackoverflow.com/questions/3768895/how-to-make-a-class-json-serializable
-- https://levelup.gitconnected.com/how-to-deserialize-json-to-custom-class-objects-in-python-d8b92949cd3b
-- https://docs.python.org/3/library/dataclasses.html
-- https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html
 
 """
 from __future__ import annotations

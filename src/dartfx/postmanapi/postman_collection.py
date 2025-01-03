@@ -49,7 +49,7 @@ class bcolors:
 
 class TypeDefinition:
     """ Represents a dataclass field type definition.
-    Used by the deserialzier when loading from JSON files. 
+    Used by the deserializer when loading from JSON files. 
     """
     def __init__(self, type_name, children=None, definition=None):
         self.type_name = type_name
@@ -57,7 +57,7 @@ class TypeDefinition:
         self.definition = definition
         self.type_category = self.determine_type_category()
         if self.type_category == "class": 
-            # get the class itself (needed by deserialier)
+            # get the class itself (needed by deserializer)
             # we assume at this point all classes belong to this module
             self.cls = getattr(sys.modules[__name__], self.type_name)
             # collect the dataclass fields
@@ -94,7 +94,7 @@ class TypeDefinition:
 
 def parse_type_definition(definition):
     """Parses a filed type definition string into a TypeDefinition object.
-    Used by the deserialier.
+    Used by the deserializer.
     """
     def parse_inner(def_str):
         if 'list[' in def_str:
@@ -166,7 +166,7 @@ def select_type_definition_from_data(union_type_definition, data):
     # get data type
     data_type = type(data).__name__
     logging.debug(f"data type: {data_type}")
-    # if data is a dictionaary, collect the keys (fields)
+    # if data is a dictionary, collect the keys (fields)
     if isinstance(data, dict):
         data_fields = set(data.keys())
         logging.debug(f"data dict fields: {data_fields}")
@@ -238,15 +238,15 @@ class CollectionResource:
         # Define an inner function that recursively handles the actual deserialization process
         def from_dict_inner(definition, data):
             """
-            Recursively deserializes nested elements from a dictionnary
+            Recursively deserializes nested elements from a dictionary
 
             The definition can be:
              - a string value coming from the dataclass field definitions
-             - a readilly parsed TypeDefinition
+             - a readily parsed TypeDefinition
              - a dataclass object or name
 
             The data holds the object data as a dictionary or primitive value,
-            typically dictionnary coming from a JSON file
+            typically dictionary coming from a JSON file
             """
             logging.debug(f"DESERIALIZING {definition}")
 
@@ -546,7 +546,7 @@ class ProxyConfig(CollectionResource): # proxy-config in JSON schema
     disabled: bool = None
 
 @dataclass
-class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behaviour in JSON schema
+class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behavior in JSON schema
     # Object with no properties in JSON schema
     pass
 @dataclass
@@ -577,7 +577,7 @@ class Response(CollectionResource):
     id: str = None
     name: str = None # EXPORTED BUT NOT IN JSON SCHEMA
     originalRequest: 'Request' = None
-    reponseTime: str | int = None
+    responseTime: str | int = None
     timings: object = None
     header: list['Header'] | str = None
     cookie: list['Cookie'] = None

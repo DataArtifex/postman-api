@@ -482,6 +482,15 @@ class PostmanApi:
         return data["workspace"]["id"]
 
     def get_workspaces(self, type: str = None, created_by: str = None) -> list[dict]:
+        """Retrieves workspaces from the Postman API associated with the user / API key.
+
+        Args:
+            type (str, optional): Workspace type (). Defaults to None (all).
+            created_by (str, optional): The user who created the workspace. Defaults to None (all).
+
+        Returns:
+            list[dict]: A list of workspaces (id and name)
+        """
         params = {}
         if type:
             params["type"] = type

@@ -40,7 +40,7 @@ def get_user_profile(
     - the user full name
     - the user email
     - link to the user avatar image
-    - a flag indicatng it the profile is public
+    - a flag indicating it the profile is public
     - the user team id
     - the user team name
     - the user team domain
@@ -78,11 +78,12 @@ def import_collection(
     """Imports, creates, updates, or replaces a valid Collection in Postman.
     
     The following rules apply:  
+    
     - A valid Postman API key must be provided.
     - Either a workspace ID or a collection ID must be provided.
     - If a workspace_id is provided, the collection is imported into the workspace.
     - If collection_id is provided, the collection is assumed to exist and will be updated.
-    - The collection specifcation must be valid based on the latest Postman API schema.
+    - The collection specification must be valid based on the latest Postman API schema.
 
     """
     api = PostmanApi(api_key)

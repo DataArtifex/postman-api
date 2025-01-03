@@ -4,13 +4,13 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hatch-foo.svg)](https://pypi.org/project/hatch-foo)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
 
-**This project is in its early development stages, so stability is not guaranteed, and documentation is limited. We welcome your feedback and contributions as we refine and expand this project together!**
+**This project is in its early development stages. Stability is not guaranteed, and documentation is limited. We welcome your feedback and contributions as we refine and expand this project together!**
 
 ## Overview
 
-This generic project facilitates interaction with the Postman API. It is being released independently of the Data Artifex Postman Toolit package to allow its use by any developer working with Postman,
+This Python project aims to facilitate interaction with the Postman platform API. 
 
-The package provides the following classes:
+The package provides the following core Python classes:
 
 - PostmanApi: for direct access to the Postman API features. Takes a Postman API key as input.
 - WorkspaceManager: To work with an existing workspace. Takes a PostmanApi and workspace identifier as input.
@@ -18,11 +18,12 @@ The package provides the following classes:
 
 Additional classes will be implemented to manage requests, folders, and other resources.
 
-This package also includes Python classes to read/write Postman collections based on the 2.1 schema. The initial implementation leverages Python data classes. But this is being transitioned into Pydantic-based classes to strengthen features/validation and facilitate integration with other packages and frameworks.
+This package also includes Python classes to read/write Postman collections based on version 2.1 of the [schema](https://schema.postman.com/). The initial implementation leverages Python data classes. But this is being transitioned into Pydantic-based classes to strengthen features/validation and facilitate integration with other packages and frameworks.
  
-An optional feature is under development to facilitate [tools calling](https://python.langchain.com/docs/concepts/tool_calling/) from LangChain / LangGraph.
+An optional feature is under development to facilitate [tools calling](https://python.langchain.com/docs/concepts/tool_calling/) from [LangChain](https://www.langchain.com/) / [LangGraph](https://langchain-ai.github.io/langgraph/).
 
-This package is a component of the Data Artifex project.
+This package is a component of the [Data Artifex](https://github.com/dataartifex) project. It is being released independently of the Data Artifex [Postman Toolit]((https://github.com/dataartifex/postman-toolkit)) package to allow its use by any developer working with Postman.
+
 
 ## Installation
 
@@ -52,21 +53,10 @@ In the meantime, you can install the package locally by following these steps:
    ```
 
    To install the LangChain/LangGraph integration:
+   
    ```bash
    pip install -e .[langchain]
    ```
-
-### Installing Dependencies
-
-To install the required dependencies, execute the following command:
-
-```bash
-pip install -r requirements.txt
-```
-
-Ensure you are in the project's root directory when running these commands.
-
-Feel free to replace `<repository-url>` and `<repository-directory>` with the actual URL and directory name of your project. This enhanced version provides clear instructions and formatting to guide users through the installation process effectively.
 
 
 ## Usage
@@ -75,14 +65,17 @@ To use this package, you must have a Postman account and [API key](https://learn
 
 *Until this repository is made public, you must generate the Sphinx documentation locally...*
 
-To do so, first ensure the relevant Sphinx packages are installed in your Python environment:
+First, ensure the relevant Sphinx packages are installed in your Python environment:
+
 ```
 pip install sphinx sphinx sphinx-rtd-theme sphinx-copybutton myst-parser
 ```
 
 Then navigate to the `docs` directory and call `make`.
 
-If you do not have `make` installed in your system you can alternatively call `sphinx-build -M source build`
+If you do not have `make` installed, you can alternatively call:
+
+`sphinx-build -M source build`
 
 Upon completion, open the `docs/build/index.html` file in your browser.
 

@@ -24,5 +24,5 @@ def test_get_user_profile():
     
 def test_get_personal_workspaces():
     data = tools.get_workspaces.invoke({'api_key': api_key, 'type': 'personal'})
-    #print(data)
+    print(data)
     assert len(data) > 0
