@@ -1,5 +1,5 @@
 import json
-from dartfx.postmanapi import postman_collection_pd as pc
+from dartfx.postmanapi import postman_collection as pc
 import os
 
 def get_data_dir():

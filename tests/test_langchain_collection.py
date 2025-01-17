@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from dartfx.postmanapi import postman_collection_pd as pc
+from dartfx.postmanapi import postman_collection as pc
 
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate

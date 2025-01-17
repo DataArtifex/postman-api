@@ -1,5 +1,5 @@
 
-from dartfx.postmanapi import postman_collection as pc
+from dartfx.postmanapi import postman_collection_dc as pc
 import os
 
 

@@ -3,5 +3,6 @@
         "bcolors",
         "OKBLUE",
         "postmanapi"
-    ]
+    ],
+    "dbcode.connections": []
 }
