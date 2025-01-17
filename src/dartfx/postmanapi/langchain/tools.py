@@ -1,11 +1,12 @@
 """
-Package to provide LangcChain/LangGraph with tools to interact with the Postman API.
+Package to provide LangChain/LangGraph with tools to interact with the Postman API.
 
 References:
 - https://python.langchain.com/docs/concepts/tools
 - https://python.langchain.com/docs/how_to/custom_tools/
 
 """
+from dataclasses import Field
 from typing import Annotated
 from langchain_core.tools import BaseTool, InjectedToolArg, ToolException
 from langchain_core.tools.base import BaseToolkit
@@ -70,52 +71,68 @@ def get_workspaces(
 
 @tool
 def import_collection(
-        collection: Annotated[dict, "The collection definition"], 
+        collection: Annotated[dict, "The collection definition as a valid JSON Postman collection"], 
         api_key: Annotated[str, "The Postman API key", InjectedToolArg], 
-        workspace_id: Annotated[str, "The ID of the workspace where the collection will be imported and created"] = None, 
-        collection_id: Annotated[str, "The ID of the existing collection to update"] = None
+        workspace_id: Annotated[str, "The ID of the workspace where the collection will be imported and created", InjectedToolArg] = None, 
+        collection_id: Annotated[str, "The ID of the existing collection to update", InjectedToolArg] = None,
+
     ) -> dict:
     """Imports, creates, updates, or replaces a valid Collection in Postman.
-    
-    The following rules apply:  
-    
-    - A valid Postman API key must be provided.
-    - Either a workspace ID or a collection ID must be provided.
-    - If a workspace_id is provided, the collection is imported into the workspace.
-    - If collection_id is provided, the collection is assumed to exist and will be updated.
-    - The collection specification must be valid based on the latest Postman API schema.
-
     """
-    api = PostmanApi(api_key)
+    # The following rules apply:  
+    # - A valid Postman API key must be provided.
+    # - Either a workspace ID or a collection ID must be provided.
+    # - If a workspace_id is provided, the collection is imported into the workspace.
+    # - If collection_id is provided, the collection is assumed to exist and will be updated.
+    # - The collection specification must be valid based on the latest Postman API schema.
+    
     if workspace_id:
-        data = api.import_collection(workspace_id, collection)
+        data = create_collection(collection, api_key, workspace_id)
     elif collection_id:
-        data = api.replace_collection(collection_id, collection)
+        data = replace_collection(collection, api_key, collection_id)  
     else:
-        raise ToolException("Either a workspace_id (create) or collection_id (udpate) must be provided")
+        raise ToolException("Either a workspace_id (create) or collection_id (update) must be provided")
     return data
 
 
 @tool
 def create_collection(
-        collection: Annotated[dict, "The collection definition"], 
-        api_key: Annotated[str, "The Postman API key", InjectedToolArg], 
-        workspace_id: Annotated[str, "The ID of the workspace where the collection will be imported and created"] = None, 
+        collection: Annotated[str, "The Postman collection JSON document"], 
+        api_key: Annotated[str, InjectedToolArg, "The Postman API key"], 
+        workspace_id: Annotated[str, InjectedToolArg, "The ID of the workspace where the collection will be imported and created"]
     ) -> dict:
-    """Creates a new Postman Collection in a workspace.
+    """Creates a new Postman Collection.
     """
-    api = PostmanApi(api_key)
-    data = api.import_collection(workspace_id, collection)
+    if workspace_id == "mock":
+        data = {
+            "collection": {
+                "id": "12ece9e1-2abf-4edc-8e34-de66e74114d2",
+                "name": "Test Collection",
+                "uid": "12345678-12ece9e1-2abf-4edc-8e34-de66e74114d2"
+            }
+        }
+    else:
+        api = PostmanApi(api_key)
+        data = api.import_collection(workspace_id, collection)
     return data
 
 @tool
 def replace_collection(
-        collection: Annotated[dict, "The collection definition"], 
+        collection: Annotated[dict, "The collection definition as a valid Postman collection JSON document"], 
         api_key: Annotated[str, "The Postman API key", InjectedToolArg], 
-        collection_id: Annotated[str, "The ID of the existing collection to update"] = None
+        collection_id: Annotated[str, "The ID of the existing collection to update", InjectedToolArg] = None,
     ) -> dict:
     """Replaces/updates an existing Postman Collection.
     """
-    api = PostmanApi(api_key)
-    data = api.replace_collection(collection_id, collection)
+    if collection_id == "mock":
+        data = {
+            "collection": {
+                "id": "12ece9e1-2abf-4edc-8e34-de66e74114d2",
+                "name": "Test Collection",
+                "uid": "12345678-12ece9e1-2abf-4edc-8e34-de66e74114d2"
+            }
+        }
+    else:
+        api = PostmanApi(api_key)
+        data = api.replace_collection(collection_id, collection)
     return data
