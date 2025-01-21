@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Postman &mdash; Data Artifex Postman API 0.1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
 
@@ -94,7 +94,7 @@
 <li><p>instantiate higher level classes</p></li>
 </ul>
 <p>To instantiate it, you will need a valid <a class="reference external" href="https://learning.postman.com/docs/developer/postman-api/authentication/">Postman API</a> key.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dartfx.postmanapi</span> <span class="kn">import</span> <span class="n">postman</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dartfx.postmanapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">postman</span>
 <span class="n">api</span> <span class="o">=</span> <span class="n">postman</span><span class="o">.</span><span class="n">PostmanApi</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;POSTMAN_API_KEY&#39;</span><span class="p">))</span>
 
 <span class="n">user_profile</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_user_profile</span><span class="p">()</span>
@@ -104,7 +104,7 @@
 </section>
 <section id="workspace-manager">
 <h2>Workspace Manager<a class="headerlink" href="#workspace-manager" title="Link to this heading"></a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dartfx.postmanapi</span> <span class="kn">import</span> <span class="n">postman</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dartfx.postmanapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">postman</span>
 
 <span class="c1"># create a workspace</span>
 <span class="n">api</span> <span class="o">=</span> <span class="n">postman</span><span class="o">.</span><span class="n">PostmanApi</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;POSTMAN_API_KEY&#39;</span><span class="p">))</span>
