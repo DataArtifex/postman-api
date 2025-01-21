@@ -93,7 +93,7 @@ class TypeDefinition:
         return value
 
 def parse_type_definition(definition):
-    """Parses a filed type definition string into a TypeDefinition object.
+    """Parses a field type definition string into a TypeDefinition object.
     Used by the deserializer.
     """
     def parse_inner(def_str):

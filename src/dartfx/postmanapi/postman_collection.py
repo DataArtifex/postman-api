@@ -18,7 +18,7 @@ Known issues:
 """
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Any, Optional, Union
 
 import json
@@ -139,6 +139,25 @@ class Collection(CollectionResource):
         if not self.info:
             self.info = Info()        
 
+    @field_validator("item", mode="before")
+    @classmethod
+    def determine_item_type(cls, value):
+        """Callable discriminator for a list of Foo and Bar"""
+        if not isinstance(value, list):
+            raise ValueError("'item' must be a list")
+        parsed_items = []
+        for item in value:
+            if isinstance(item, dict):
+                if "request" in item:
+                    parsed_items.append(Item(**item))
+                elif "item" in item:
+                    parsed_items.append(ItemGroup(**item))
+                else:
+                    raise ValueError(f"Invalid object: {item} must contain 'request' for Item or 'item' for ItemGroup")
+            else:
+                raise ValueError(f"Invalid format: {item} must be a dictionary")
+        return parsed_items
+
 class Cookie(CollectionResource):
     domain: str = None
     path: str = None
@@ -235,13 +254,32 @@ class Item(CollectionResource):
 
 
 class ItemGroup(CollectionResource): # item-group in JSON schema
-    item: list['Item'] = Field(default_factory=list)
+    item: list[Union[Item,ItemGroup]] = Field(default_factory=list)
     name: Optional[str] = None
     description: Optional[Union['Description',str]] = None
     variable: Optional[list['Variable']] = None
     event: Optional[list['Event']] = None
     auth: Optional['Auth'] = None
     protocolProfileBehavior: Optional[object] = None    
+    
+    @field_validator("item", mode="before")
+    @classmethod
+    def determine_item_type(cls, value):
+        """Callable discriminator for a list of Foo and Bar"""
+        if not isinstance(value, list):
+            raise ValueError("'item' must be a list")
+        parsed_items = []
+        for item in value:
+            if isinstance(item, dict):
+                if "request" in item:
+                    parsed_items.append(Item(**item))
+                elif "item" in item:
+                    parsed_items.append(ItemGroup(**item))
+                else:
+                    raise ValueError(f"Invalid object: {item} must contain 'request' for Item or 'item' for ItemGroup")
+            else:
+                raise ValueError(f"Invalid format: {item} must be a dictionary")
+        return parsed_items
 
 class ProxyConfig(CollectionResource): # proxy-config in JSON schema
     match: Optional[str] = None
@@ -250,7 +288,7 @@ class ProxyConfig(CollectionResource): # proxy-config in JSON schema
     tunnel: Optional[bool] = False
     disabled: Optional[bool] = None
 
-class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behaviour in JSON schema
+class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behavior in JSON schema
     # Object with no properties in JSON schema
     pass
 
@@ -299,8 +337,8 @@ class Script(CollectionResource):
 class URL(CollectionResource):
     raw: Optional[str] = None
     protocol: Optional[str] = None
-    host: Optional[list[str]] = None
-    path: Optional[list[str]] = None
+    host: Optional[Union[str,list[str]]] = None
+    path: Optional[Union[str,list[str]]] = None
     port: Optional[str] = None
     query: Optional[list['QueryParam']] = None
     hash: Optional[str] = None
