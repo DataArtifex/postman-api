@@ -27,8 +27,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme sphinx-copybutton myst_parser
 
-      - name: Install your package
-        run: pip install .
+      - name: Install package
+        run: pip install . .[langchain]
 
       # Build Sphinx Documentation
       - name: Build Documentation
