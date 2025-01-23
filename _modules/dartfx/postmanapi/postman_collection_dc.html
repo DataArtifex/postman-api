@@ -1,0 +1,886 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dartfx.postmanapi.postman_collection_dc &mdash; Data Artifex Postman API 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Data Artifex Postman API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../postman.html">Postman</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../postman-collection.html">Postman Collection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../langchain.html">LangChain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Data Artifex Postman API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dartfx.postmanapi.postman_collection_dc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dartfx.postmanapi.postman_collection_dc</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A set of Python classes for working with Postman collections import/export format.</span>
+
+<span class="sd">Based on the schema v2.1.0 (https://schema.postman.com/)</span>
+<span class="sd">Can generate a collection from scratch or load from JSON.</span>
+
+<span class="sd">Tips:</span>
+
+<span class="sd">- When publishing a collection through the API, make sure the info/_postman_id is not set</span>
+
+<span class="sd">Known issues:</span>
+
+<span class="sd">- Properties with a &#39;-&#39; not currently supported as they are not a valid Python class/field name</span>
+<span class="sd">  Examples: auth-attribute, proxy-config, protocol-profile-behavior</span>
+<span class="sd">  --&gt; need to implement a rename in json serializer / deserializer if needed</span>
+
+<span class="sd">References:</span>
+
+<span class="sd">- https://realpython.com/python-data-classes</span>
+<span class="sd">- https://stackoverflow.com/questions/3768895/how-to-make-a-class-json-serializable</span>
+<span class="sd">- https://levelup.gitconnected.com/how-to-deserialize-json-to-custom-class-objects-in-python-d8b92949cd3b</span>
+<span class="sd">- https://docs.python.org/3/library/dataclasses.html</span>
+<span class="sd">- https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">fields</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib</span>
+
+<span class="c1">#</span>
+<span class="c1"># HELPERS</span>
+<span class="c1">#</span>
+<div class="viewcode-block" id="bcolors">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.bcolors">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">bcolors</span><span class="p">:</span>
+    <span class="n">HEADER</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[95m&#39;</span>
+    <span class="n">OKBLUE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[94m&#39;</span>
+    <span class="n">OKCYAN</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[96m&#39;</span>
+    <span class="n">OKGREEN</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[92m&#39;</span>
+    <span class="n">WARNING</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[93m&#39;</span>
+    <span class="n">FAIL</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[91m&#39;</span>
+    <span class="n">ENDC</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[0m&#39;</span>
+    <span class="n">BOLD</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[1m&#39;</span>
+    <span class="n">UNDERLINE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[4m&#39;</span></div>
+
+
+<div class="viewcode-block" id="TypeDefinition">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.TypeDefinition">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeDefinition</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Represents a dataclass field type definition.</span>
+<span class="sd">    Used by the deserializer when loading from JSON files. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_name</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">definition</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span> <span class="o">=</span> <span class="n">type_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="n">children</span> <span class="k">if</span> <span class="n">children</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="n">definition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_category</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">determine_type_category</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_category</span> <span class="o">==</span> <span class="s2">&quot;class&quot;</span><span class="p">:</span> 
+            <span class="c1"># get the class itself (needed by deserializer)</span>
+            <span class="c1"># we assume at this point all classes belong to this module</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span><span class="p">)</span>
+            <span class="c1"># collect the dataclass fields</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fieldtypes</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">type</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cls</span><span class="p">)}</span>            
+
+<div class="viewcode-block" id="TypeDefinition.determine_type_category">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.TypeDefinition.determine_type_category">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">determine_type_category</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span> <span class="o">==</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;list&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span> <span class="o">==</span> <span class="s1">&#39;dict&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;dict&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span> <span class="o">==</span> <span class="s1">&#39;union&#39;</span> <span class="ow">or</span> <span class="s1">&#39;|&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;union&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span> <span class="o">==</span> <span class="s1">&#39;Any&#39;</span><span class="p">:</span> <span class="c1"># this will force to return the value as is</span>
+            <span class="k">return</span> <span class="s1">&#39;primitive&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;bool&#39;</span><span class="p">,</span> <span class="s1">&#39;any&#39;</span><span class="p">}:</span>
+            <span class="k">return</span> <span class="s1">&#39;primitive&#39;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_name</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;class&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;unknown&#39;</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="si">}</span><span class="s2">-&gt;&quot;</span>
+        <span class="n">value</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">type_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">child</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">)</span><span class="si">}</span><span class="s2">) [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="si">}</span><span class="s2">]&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_category</span> <span class="o">==</span> <span class="s2">&quot;class&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fieldtypes</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">   </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fieldtypes</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="parse_type_definition">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.parse_type_definition">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_type_definition</span><span class="p">(</span><span class="n">definition</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses a field type definition string into a TypeDefinition object.</span>
+<span class="sd">    Used by the deserializer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_inner</span><span class="p">(</span><span class="n">def_str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;list[&#39;</span> <span class="ow">in</span> <span class="n">def_str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_list</span><span class="p">(</span><span class="n">def_str</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;dict[&#39;</span> <span class="ow">in</span> <span class="n">def_str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_dict</span><span class="p">(</span><span class="n">def_str</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;|&#39;</span> <span class="ow">in</span> <span class="n">def_str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_union</span><span class="p">(</span><span class="n">def_str</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TypeDefinition</span><span class="p">(</span><span class="n">def_str</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">definition</span><span class="o">=</span><span class="n">def_str</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_list</span><span class="p">(</span><span class="n">def_str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Parse a list type definition string into a TypeDefinition object.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">        list[&#39;Cookie&#39;] </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">def_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TypeDefinition</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;list\[(.*)\]&#39;</span><span class="p">,</span> <span class="n">def_str</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">inner_type</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">TypeDefinition</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">parse_inner</span><span class="p">(</span><span class="n">inner_type</span><span class="p">)],</span> <span class="n">definition</span><span class="o">=</span><span class="n">def_str</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid list type definition: </span><span class="si">{</span><span class="n">def_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_dict</span><span class="p">(</span><span class="n">def_str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Parse a dict type definition string into a TypeDefinition object.</span>
+<span class="sd">        Examples: No use case at this time</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;dict\[(.*)\]&#39;</span><span class="p">,</span> <span class="n">def_str</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">key_value_types</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_value_types</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">key_type</span> <span class="o">=</span> <span class="n">key_value_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">value_type</span> <span class="o">=</span> <span class="n">key_value_types</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">TypeDefinition</span><span class="p">(</span><span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">parse_inner</span><span class="p">(</span><span class="n">key_type</span><span class="p">),</span> <span class="n">parse_inner</span><span class="p">(</span><span class="n">value_type</span><span class="p">)],</span> <span class="n">definition</span><span class="o">=</span><span class="n">def_str</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid dict type definition: </span><span class="si">{</span><span class="n">def_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid dict type definition: </span><span class="si">{</span><span class="n">def_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_union</span><span class="p">(</span><span class="n">def_str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Parse a union type definition string into a TypeDefinition object.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">        &#39;Description&#39; | str</span>
+<span class="sd">        &#39;Version&#39; | str</span>
+<span class="sd">        list[&#39;Header&#39;] | str</span>
+<span class="sd">        list[str] | str</span>
+<span class="sd">        list[&#39;Item&#39;|&#39;ItemGroup&#39;]</span>
+<span class="sd">        list[str] | str</span>
+<span class="sd">        dict[str,Foo] | Bar</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">def_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">TypeDefinition</span><span class="p">(</span><span class="s1">&#39;union&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">parse_inner</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">types</span><span class="p">])</span>
+
+    <span class="c1"># Remove class definition surrouding quotes if exists</span>
+    <span class="c1"># This happens when using deferred class declaration </span>
+     <span class="c1">#like foo: &#39;Bar&#39; (instead of Foo: Bar)</span>
+    <span class="n">definition</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="c1"># Recursively parse the type definition</span>
+    <span class="k">return</span> <span class="n">parse_inner</span><span class="p">(</span><span class="n">definition</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="select_type_definition_from_data">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.select_type_definition_from_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">select_type_definition_from_data</span><span class="p">(</span><span class="n">union_type_definition</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determines which type definition to use based on the data.</span>
+<span class="sd">    Necessary when a field has allows for multiple types (union in Python or OneOf in JSON schema)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKGREEN</span><span class="p">)</span>
+    <span class="c1"># get data type</span>
+    <span class="n">data_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data type: </span><span class="si">{</span><span class="n">data_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># if data is a dictionary, collect the keys (fields)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">data_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data dict fields: </span><span class="si">{</span><span class="n">data_fields</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">selected_type</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># loop over union definitions</span>
+    <span class="k">for</span> <span class="n">type_definition</span> <span class="ow">in</span> <span class="n">union_type_definition</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_definition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># data is primitive type</span>
+        <span class="k">if</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;bool&quot;</span><span class="p">]:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;str_data_type&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_name</span> <span class="o">==</span> <span class="n">data_type</span><span class="p">:</span>
+                <span class="c1"># matched</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;primitive matched!&quot;</span><span class="p">)</span>
+                <span class="n">selected_type</span> <span class="o">=</span> <span class="n">type_definition</span>
+                <span class="k">break</span> <span class="c1"># we&#39;re done</span>
+        <span class="c1"># dictionary type</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># compare keys/fields</span>
+            <span class="k">if</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_category</span> <span class="o">==</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;child fields: </span><span class="si">{</span><span class="n">type_definition</span><span class="o">.</span><span class="n">fieldtypes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data_fields</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">type_definition</span><span class="o">.</span><span class="n">fieldtypes</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                    <span class="c1"># matched</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;dict matched!&quot;</span><span class="p">)</span>
+                    <span class="n">selected_type</span> <span class="o">=</span> <span class="n">type_definition</span>
+                    <span class="k">break</span> <span class="c1"># we&#39;re done</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown data type </span><span class="si">{</span><span class="n">data_type</span><span class="si">}</span><span class="s2"> in select_type_definition_from_data&quot;</span><span class="p">)</span>
+    <span class="c1"># make the final choice</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">selected_type</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: No type definition found for </span><span class="si">{</span><span class="n">data_type</span><span class="si">}</span><span class="s2">. Using first available option...&quot;</span><span class="p">)</span>
+        <span class="n">selected_type</span> <span class="o">=</span> <span class="n">union_type_definition</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">selected_type</span></div>
+
+
+
+<span class="c1">#</span>
+<span class="c1"># DATA CLASSES</span>
+<span class="c1">#</span>
+
+<div class="viewcode-block" id="CollectionResource">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.CollectionResource">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CollectionResource</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for all Postman collection resource.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1"># SERIALIZER</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="CollectionResource.asdict">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.CollectionResource.asdict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="CollectionResource.toJSON">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.CollectionResource.toJSON">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">toJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asdict</span><span class="p">(),</span><span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollectionResource.save">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.CollectionResource.save">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asdict</span><span class="p">(),</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported format: </span><span class="si">{</span><span class="nb">format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+    <span class="c1">#</span>
+    <span class="c1"># DESERIALIZER</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="CollectionResource.from_dict">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.CollectionResource.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deserializes from a dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Define an inner function that recursively handles the actual deserialization process</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">from_dict_inner</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Recursively deserializes nested elements from a dictionary</span>
+
+<span class="sd">            The definition can be:</span>
+<span class="sd">             - a string value coming from the dataclass field definitions</span>
+<span class="sd">             - a readily parsed TypeDefinition</span>
+<span class="sd">             - a dataclass object or name</span>
+
+<span class="sd">            The data holds the object data as a dictionary or primitive value,</span>
+<span class="sd">            typically dictionary coming from a JSON file</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DESERIALIZING </span><span class="si">{</span><span class="n">definition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># INIT</span>
+            <span class="c1"># if definition is a class, use its name instead</span>
+            <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">definition</span><span class="p">):</span>
+                <span class="n">definition</span> <span class="o">=</span> <span class="n">definition</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="c1"># if definition is already the right type, not need to further process</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">TypeDefinition</span><span class="p">):</span>
+                <span class="n">type_definition</span> <span class="o">=</span> <span class="n">definition</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="c1"># if definition is a string, parse it</span>
+                <span class="n">type_definition</span> <span class="o">=</span> <span class="n">parse_type_definition</span><span class="p">(</span><span class="n">definition</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid definition: </span><span class="si">{</span><span class="n">definition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># DISAMBIGUATE UNION</span>
+            <span class="k">if</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_category</span> <span class="o">==</span> <span class="s2">&quot;union&quot;</span><span class="p">:</span>
+                <span class="c1"># infer the type based on the content of the data</span>
+                <span class="n">type_definition</span> <span class="o">=</span> <span class="n">select_type_definition_from_data</span><span class="p">(</span><span class="n">type_definition</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+            <span class="c1"># PROCESS DATACLASS TYPE</span>
+            <span class="k">if</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_category</span> <span class="o">==</span> <span class="s2">&quot;class&quot;</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">-- DATACLASS --</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Retrieve the class</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">],</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_name</span><span class="p">):</span>
+                    <span class="bp">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">],</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_name</span><span class="p">)</span>
+                    <span class="c1"># Retrieve the field types</span>
+                    <span class="n">fieldtypes</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">type</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">cls</span><span class="p">)}</span>
+                    <span class="c1"># Retrieve the field values</span>
+                    <span class="n">field_values</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fieldtypes</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                            <span class="c1"># If the field is in the data, recursively call from_dict_inner to deserialize it</span>
+                            <span class="n">field_values</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">from_dict_inner</span><span class="p">(</span><span class="n">fieldtypes</span><span class="p">[</span><span class="n">f</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">f</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># If the field is not in the data, set it to None</span>
+                            <span class="c1"># field_values[f] = None</span>
+                            <span class="k">pass</span>
+
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deserialized field values:</span><span class="si">{</span><span class="n">field_values</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Report fields in dict but not in dataclass</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">missing_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fieldtypes</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">missing_fields</span><span class="p">:</span>
+                            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing fields: </span><span class="si">{</span><span class="n">missing_fields</span><span class="si">}</span><span class="s2"> for</span><span class="se">\n</span><span class="si">{</span><span class="n">definition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Step 3: Instantiate the dataclass</span>
+                    <span class="c1"># Use the dictionary of field values to create an instance of the dataclass</span>
+                    <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">field_values</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">--&gt; RETURN DATACLASS </span><span class="si">{</span><span class="n">instance</span><span class="si">}{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">instance</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Definition </span><span class="si">{</span><span class="n">definition</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># PROCESS LIST TYPE</span>
+            <span class="k">elif</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_category</span> <span class="o">==</span> <span class="s2">&quot;list&quot;</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">-- LIST --</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">list_type_definition</span> <span class="o">=</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># Recursively process each item in the list</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">from_dict_inner</span><span class="p">(</span><span class="n">list_type_definition</span><span class="p">,</span> <span class="n">item</span><span class="p">))</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">--&gt; RETURN LIST </span><span class="si">{</span><span class="n">values</span><span class="si">}{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">values</span>
+            
+            <span class="c1"># PROCESS DICTIONARY TYPE</span>
+            <span class="c1"># note: we do not have dict in the current model</span>
+            <span class="k">elif</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_category</span><span class="o">==</span> <span class="s2">&quot;dict&quot;</span><span class="p">:</span> 
+                <span class="c1"># TODO</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">-- DICT --</span><span class="si">{</span><span class="n">values</span><span class="si">}{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">key_type</span><span class="p">,</span> <span class="n">value_type</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__args__</span>
+                <span class="c1"># Recursively process each item in the dict</span>
+                <span class="n">dct</span> <span class="o">=</span> <span class="p">{</span><span class="n">from_dict_inner</span><span class="p">(</span><span class="n">key_type</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span> <span class="n">from_dict_inner</span><span class="p">(</span><span class="n">value_type</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">--&gt; RETURN DICT </span><span class="si">{</span><span class="nb">dict</span><span class="si">}{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">dct</span>
+
+            <span class="c1"># PROCESS PRIMITIVE TYPE</span>
+            <span class="k">elif</span> <span class="n">type_definition</span><span class="o">.</span><span class="n">type_category</span> <span class="o">==</span> <span class="s2">&quot;primitive&quot;</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">-- PRIMITIVE --</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># If the type is not a dataclass or a list, return the data directly</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">OKBLUE</span><span class="si">}</span><span class="s2">--&gt; RETURN PRIMITIVE:</span><span class="si">{</span><span class="n">data</span><span class="si">}{</span><span class="n">bcolors</span><span class="o">.</span><span class="n">ENDC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">data</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported type definition </span><span class="si">{</span><span class="n">type_definition</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">type_definition</span><span class="o">.</span><span class="n">type_category</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Call the inner function with the initial class and data to start the deserialization process</span>
+        <span class="k">return</span> <span class="n">from_dict_inner</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollectionResource.from_json">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.CollectionResource.from_json">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Collection</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollectionResource.load">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.CollectionResource.load">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>        </div>
+</div>
+
+
+<div class="viewcode-block" id="Auth">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Auth">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Auth</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm</span>
+    <span class="n">noauth</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">apikey</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">awsv4</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">basic</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">bearer</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">digest</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">edgegrid</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">hawk</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ntlm</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">oauth1</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">oauth2</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;AuthAttribute&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="AuthAttribute">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.AuthAttribute">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuthAttribute</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Body">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Body">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Body</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># raw, urlencoded, formdata, file, graphql</span>
+    <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">graphql</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">urlencoded</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BodyUrlEncoded</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">formdata</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BodyFormData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">file</span><span class="p">:</span> <span class="n">BodyFile</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">options</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="BodyFile">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.BodyFile">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BodyFile</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">src</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="BodyFormData">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.BodyFormData">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BodyFormData</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># for type=text</span>
+    <span class="n">src</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># for type=file</span>
+    <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># test | file</span>
+    <span class="n">contentType</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span> <span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="BodyUrlEncoded">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.BodyUrlEncoded">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BodyUrlEncoded</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Certificate">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Certificate">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Certificate</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">matches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">key</span><span class="p">:</span> <span class="s1">&#39;CertificateSrc&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cert</span><span class="p">:</span> <span class="s1">&#39;CertificateSrc&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">passphrase</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="CertificateSrc">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.CertificateSrc">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CertificateSrc</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">src</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>    </div>
+
+
+<div class="viewcode-block" id="Collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Collection">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Collection</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">info</span><span class="p">:</span> <span class="s1">&#39;Info&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">item</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Item&#39;</span><span class="o">|</span><span class="s1">&#39;ItemGroup&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">event</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">variable</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">auth</span><span class="p">:</span> <span class="s1">&#39;Auth&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">protocolProfileBehavior</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_postman_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="n">Info</span><span class="p">()</span></div>
+
+        
+<div class="viewcode-block" id="Cookie">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Cookie">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Cookie</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">expires</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">maxAge</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">hostOnly</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">httpOnly</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">secure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">session</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">extensions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Description">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Description">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Description</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="n">version</span><span class="p">:</span> <span class="s1">&#39;Version&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Event">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Event">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Event</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">listen</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">script</span><span class="p">:</span> <span class="s1">&#39;Script&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Header">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Header">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Header</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Info">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Info">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Info</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_postman_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> 
+    <span class="n">_exporter_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># EXPORTED BUT NOT IN JSON SCHEMA</span>
+    <span class="n">_collection_link</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># EXPORTED BUT NOT IN JSON SCHEMA</span>
+    <span class="n">description</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">version</span><span class="p">:</span> <span class="s1">&#39;Version&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://schema.getpostman.com/json/collection/v2.1.0/collection.json&quot;</span></div>
+
+
+<div class="viewcode-block" id="Item">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Item">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Item</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">variable</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">event</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">request</span><span class="p">:</span> <span class="s1">&#39;Request&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">response</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Response&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">protocolProfileBehavior</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">()</span>
+
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add an event to this item, initializing the event array if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Item.add_event">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Item.add_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="p">)</span></div>
+
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to create request</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Item.create_request">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Item.create_request">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">()</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">URL</span><span class="p">()</span>
+        <span class="n">url_components</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="n">url_components</span><span class="o">.</span><span class="n">scheme</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">url_components</span><span class="o">.</span><span class="n">hostname</span>
+        <span class="k">if</span> <span class="n">url_components</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">url_components</span><span class="o">.</span><span class="n">port</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">url_components</span><span class="o">.</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">url_components</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">url_components</span><span class="o">.</span><span class="n">fragment</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">hash</span> <span class="o">=</span> <span class="n">url_components</span><span class="o">.</span><span class="n">fragment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span></div>
+
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to create javascript test event</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Item.create_javascript_test_event">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Item.create_javascript_test_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_javascript_test_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="n">Script</span><span class="p">()</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">script</span><span class="p">):</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">exec</span> <span class="o">=</span> <span class="n">script</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">event</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ItemGroup">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.ItemGroup">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ItemGroup</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span> <span class="c1"># item-group in JSON schema</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">variable</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">item</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Item&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">event</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">auth</span><span class="p">:</span> <span class="s1">&#39;Auth&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">protocolProfileBehavior</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span>    </div>
+
+
+<div class="viewcode-block" id="ProxyConfig">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.ProxyConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProxyConfig</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span> <span class="c1"># proxy-config in JSON schema</span>
+    <span class="n">match</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tunnel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ProtocolProfileBehavior">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.ProtocolProfileBehavior">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProtocolProfileBehavior</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span> <span class="c1"># proxy-profile-behavior in JSON schema</span>
+    <span class="c1"># Object with no properties in JSON schema</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="QueryParam">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.QueryParam">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueryParam</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Request">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Request">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Request</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">url</span><span class="p">:</span> <span class="s1">&#39;URL&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">auth</span><span class="p">:</span> <span class="s1">&#39;Auth&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">proxy</span><span class="p">:</span> <span class="s1">&#39;ProxyConfig&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">certificate</span><span class="p">:</span> <span class="s1">&#39;Certificate&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value</span>
+    <span class="n">description</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">header</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Header&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">body</span><span class="p">:</span> <span class="s1">&#39;Body&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Request.add_header">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Request.add_header">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Header</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">))</span></div>
+</div>
+
+
+<div class="viewcode-block" id="Response">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Response">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Response</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># EXPORTED BUT NOT IN JSON SCHEMA</span>
+    <span class="n">originalRequest</span><span class="p">:</span> <span class="s1">&#39;Request&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">responseTime</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">timings</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">header</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Header&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cookie</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Cookie&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">body</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_postman_previewlanguage</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="Script">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Script">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Script</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">exec</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">src</span><span class="p">:</span> <span class="n">URL</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="URL">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.URL">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">URL</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">protocol</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">port</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;QueryParam&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">hash</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">variable</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a query parameter to this URL, initializing the query array if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="URL.add_query_param">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.URL.add_query_param">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_query_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span></div>
+
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to create a query parameter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="URL.create_query_parameter">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.URL.create_query_parameter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_query_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="n">QueryParam</span><span class="p">()</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="k">if</span> <span class="n">disabled</span><span class="p">:</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">disabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_query_param</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">param</span></div>
+</div>
+
+
+<div class="viewcode-block" id="Variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Variable">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Variable</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># string, boolean, any, number</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">system</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Version">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection_dc.Version">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Version</span><span class="p">(</span><span class="n">CollectionResource</span><span class="p">):</span>
+    <span class="n">major</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">minor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">patch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">meta</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Pascal Heus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1330 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dartfx.postmanapi.postman &mdash; Data Artifex Postman API 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Data Artifex Postman API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../postman.html">Postman</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../postman-collection.html">Postman Collection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../langchain.html">LangChain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Data Artifex Postman API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dartfx.postmanapi.postman</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dartfx.postmanapi.postman</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes and helpers to interact with the Postman API, workspaces, collections, folders, and related resources.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+
+<div class="viewcode-block" id="PostmanApi">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PostmanApi</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to call the Postman API&quot;&quot;&quot;</span>
+
+    <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># The API key</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># ENUM</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="PostmanApi.EntityType">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.EntityType">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">EntityType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+        <span class="n">WORKSPACE</span> <span class="o">=</span> <span class="s2">&quot;workspace&quot;</span>
+        <span class="n">COLLECTION</span> <span class="o">=</span> <span class="s2">&quot;collection&quot;</span>
+        <span class="n">API</span> <span class="o">=</span> <span class="s2">&quot;api&quot;</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.WorkspaceType">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.WorkspaceType">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">WorkspaceType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+        <span class="n">PERSONAL</span> <span class="o">=</span> <span class="s2">&quot;personal&quot;</span>
+        <span class="n">PRIVATE</span> <span class="o">=</span> <span class="s2">&quot;private&quot;</span>
+        <span class="n">PUBLIC</span> <span class="o">=</span> <span class="s2">&quot;public&quot;</span>
+        <span class="n">TEAM</span> <span class="o">=</span> <span class="s2">&quot;team&quot;</span>
+        <span class="n">PARTNER</span> <span class="o">=</span> <span class="s2">&quot;partner&quot;</span></div>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># CORE HTTP REQUESTS</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="PostmanApi.request">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.request">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call the Postman API.&quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://api.getpostman.com/</span><span class="si">{</span><span class="n">endpoint</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="c1"># prepare headers</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;X-API-KEY&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span>
+            <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="p">}</span> <span class="o">|</span> <span class="n">headers</span>
+        <span class="c1"># call API</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># handle response</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">description</span><span class="si">}</span><span class="s2"> -- </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">PostmanApiError</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.delete_request">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.delete_request">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call the Postman API using the DEL method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s2">&quot;delete&quot;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.get_request">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.get_request">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call the Postman API using the GET method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s2">&quot;get&quot;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.post_request">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.post_request">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call the Postman API using the POST method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s2">&quot;post&quot;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.patch_request">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.patch_request">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">patch_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call the Postman API using the PATCH method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s2">&quot;patch&quot;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.put_request">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.put_request">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">put_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call the Postman API using the PUT method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s2">&quot;put&quot;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{},</span> <span class="n">success</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># COLLECTIONS</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="PostmanApi.create_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.create_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_collection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">workspace_id</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">collectionSchemaUrl</span><span class="o">=</span><span class="s2">&quot;https://schema.getpostman.com/json/collection/v2.1.0/collection.json&quot;</span><span class="p">,</span>
+        <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new/blank Postman collection.</span>
+
+<span class="sd">        Use import_collection to create from a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            workspace_id (str): The ID of the workspace</span>
+<span class="sd">            name (str): The name of the collection</span>
+<span class="sd">            collectionSchemaUrl (str, optional): The URL of the collection schema. Defaults to &quot;https://schema.getpostman.com/json/collection/v2.1.0/collection.json&quot;.</span>
+<span class="sd">            variables (dict, optional): The variables of the collection. Defaults to None. Must be a valid Postman variable object.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The UID of the collection</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;workspace&quot;</span><span class="p">:</span> <span class="n">workspace_id</span><span class="p">}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;collection&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                    <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="n">collectionSchemaUrl</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;item&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;collection&quot;</span><span class="p">][</span><span class="s2">&quot;variable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">variables</span>
+        <span class="c1"># call API</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;API: Create collection&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_request</span><span class="p">(</span>
+            <span class="s2">&quot;collections&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Create collection </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in workspace </span><span class="si">{</span><span class="n">workspace_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;collection&quot;</span><span class="p">][</span><span class="s2">&quot;uid&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.delete_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.delete_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a Postman collection</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection_id (str): The ID of the collection</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The ID of the collection</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Delete collection </span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;collection&quot;</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.get_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.get_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a Postman collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection_id (str): The ID of the collection</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The collection data</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Get collection </span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.import_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.import_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">import_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workspace_id</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a Postman collection from a populated dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            workspace_id (str): The ID of the workspace</span>
+<span class="sd">            collection (dict): The collection data</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The ID of the collection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;workspace&quot;</span><span class="p">:</span> <span class="n">workspace_id</span><span class="p">}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;collection&quot;</span><span class="p">:</span> <span class="n">collection</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_request</span><span class="p">(</span>
+            <span class="s2">&quot;collections&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Import collection in workspace </span><span class="si">{</span><span class="n">workspace_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;collection&quot;</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.replace_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.replace_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replaces a Postman collection from a populated dictionary</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            workspace_id (str): The ID of the workspace</span>
+<span class="sd">            collection_id (str): The ID of the collection</span>
+<span class="sd">            collection (dict): The collection data</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;collection&quot;</span><span class="p">:</span> <span class="n">collection</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">put_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Replace collection </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;collection&quot;</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
+
+
+
+    <span class="c1">#</span>
+    <span class="c1"># FOLDERS</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="PostmanApi.create_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.create_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_folder</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">collection_id</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;New Folder&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">parent_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a folder in a collection</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection_id (str): The ID of the collection</span>
+<span class="sd">            name (str): The name of the folder</span>
+<span class="sd">            description (str, optional): The description of the folder. Defaults to None.</span>
+<span class="sd">            parent_id (str, optional): The ID of the parent folder. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The UID of the folder</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">folder_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
+            <span class="n">folder_data</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="k">if</span> <span class="n">parent_id</span><span class="p">:</span>
+            <span class="n">folder_data</span><span class="p">[</span><span class="s2">&quot;folder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent_id</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">folder_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">/folders&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Create folder </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in collection </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">folder_data</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">folder_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="c1"># transferring folder requires uid, so return that instead of just id</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">folder_data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">folder_data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">uid</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.get_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.get_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">folder_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a folder in a collection</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection_id (str): The ID of the collection</span>
+<span class="sd">            id (str): The ID of the folder</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The folder data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">/folders/</span><span class="si">{</span><span class="n">folder_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Get folder </span><span class="si">{</span><span class="n">folder_id</span><span class="si">}</span><span class="s2"> in collection </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.delete_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.delete_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a folder in a collection</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection_id (str): The ID of the collection</span>
+<span class="sd">            id (str): The ID of the folder</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The ID of the folder</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">/folders/</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Delete folder </span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2"> in collection </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.update_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.update_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update a folder in a collection</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection_id (str): The ID of the collection</span>
+<span class="sd">            id (str): The ID of the folder</span>
+<span class="sd">            data (dict): The folder data</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The folder data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">put_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">/folders/</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Update folder </span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2"> in collection </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># TAGS</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="PostmanApi.get_elements_by_tag">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.get_elements_by_tag">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_elements_by_tag</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">slug</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">entity_type</span><span class="p">:</span> <span class="n">EntityType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">direction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cursor</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get elements by tag.</span>
+<span class="sd">        Only available under Postman Enterprise plan.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            slug (str): The slug of the tag</span>
+<span class="sd">            entity_type (EntityType, optional): The type of the entity. Defaults to None.</span>
+<span class="sd">            limit (int, optional): The limit of the elements. Defaults to None.</span>
+<span class="sd">            direction (str, optional): The direction of the elements. Defaults to None.</span>
+<span class="sd">            cursor (str, optional): The cursor of the elements. Defaults to None.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The elements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">entity_type</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;entity_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity_type</span>
+        <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">limit</span>
+        <span class="k">if</span> <span class="n">direction</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;direction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">direction</span>
+        <span class="k">if</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;cursor&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cursor</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;tags/</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">/elements&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Get elements by tag </span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># TRANSFERS</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="PostmanApi.collection_folder_transfer">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.collection_folder_transfer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collection_folder_transfer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">uids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">target_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">target_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;collection&quot;</span><span class="p">,</span>
+        <span class="n">location_position</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span>
+        <span class="n">location_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">location_uid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;move&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transfer a collection or folder to another collection or folder</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            uids (list): The folder UIDs to transfer.</span>
+<span class="sd">            target_uid (str): the UID of the destination collection or folder.</span>
+<span class="sd">            target_model (str, optional): The type of item where the items will be transferred to (collection or folder). Defaults to &#39;collection&#39;.</span>
+<span class="sd">            location_position (str, optional): The item&#39;s position within the destination (start, end, before, after). Defaults to &#39;start&#39;.</span>
+<span class="sd">            location_model (str, optional):  For the before or after positions, a string value that contains the type of item (model) that the transferred item will be positioned by. Defaults to None.</span>
+<span class="sd">            location_uid (str, optional): For the before or after positions, a string value that contains the model&#39;s UID. Defaults to None.</span>
+<span class="sd">            mode (str, optional): The transfer mode (move or copy). Defaults to &#39;move&#39;.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The transfer data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">uids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">uids</span> <span class="o">=</span> <span class="p">[</span><span class="n">uids</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="n">uids</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">target_uid</span><span class="p">,</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">target_model</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">location_position</span><span class="p">,</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">location_model</span><span class="p">,</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">location_uid</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_request</span><span class="p">(</span>
+            <span class="s2">&quot;collection-folders-transfers&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Transfer elements </span><span class="si">{</span><span class="n">uids</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">target_uid</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">target_model</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+    <span class="c1">#</span>
+    <span class="c1"># USER</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="PostmanApi.get_user_profile">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.get_user_profile">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_user_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">,</span> <span class="s2">&quot;Get authenticated user profile&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.get_user_operations">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.get_user_operations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_user_operations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">,</span> <span class="s2">&quot;Get authenticated user operations&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;operations&quot;</span><span class="p">]</span></div>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># WORKSPACES</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="PostmanApi.create_workspace">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.create_workspace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_workspace</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">WorkspaceType</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Postman workspace.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The name of the workspace</span>
+<span class="sd">            type (WorkspaceType): The type of the workspace</span>
+<span class="sd">            description (str, optional): The description of the workspace. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            PostmanApiError: If the API returns an error</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The ID of the workspace</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># prepare data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;workspace&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="c1"># call API</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_request</span><span class="p">(</span>
+            <span class="s2">&quot;workspaces&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Create workspace </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">data</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;workspace&quot;</span><span class="p">][</span><span class="s2">&quot;uid&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.delete_workspace">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.delete_workspace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_workspace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workspace_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a Postman workspace</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            workspace_id (str): The ID of the workspace</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The ID of the workspace</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;workspaces/</span><span class="si">{</span><span class="n">workspace_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Delete workspace </span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;workspace&quot;</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PostmanApi.get_workspaces">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApi.get_workspaces">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_workspaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">created_by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves workspaces from the Postman API associated with the user / API key.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            type (str, optional): Workspace type (). Defaults to None (all).</span>
+<span class="sd">            created_by (str, optional): The user who created the workspace. Defaults to None (all).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: A list of workspaces (id and name)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="k">if</span> <span class="n">created_by</span><span class="p">:</span>  
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;createdBy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">created_by</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span>
+            <span class="s2">&quot;workspaces&quot;</span><span class="p">,</span> <span class="s2">&quot;Get workspaces&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;workspaces&quot;</span><span class="p">]</span>       </div>
+</div>
+
+        
+
+<div class="viewcode-block" id="PostmanApiError">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.PostmanApiError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PostmanApiError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom exception for Postman API errors.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">status_code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="n">response</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">base_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;PostmanApiError: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; (Status Code: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; (Response: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="n">base_message</span></div>
+
+
+
+<div class="viewcode-block" id="WorkspaceManager">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">WorkspaceManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to interact with a Postman workspace&quot;&quot;&quot;</span>
+
+    <span class="n">TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;personal&quot;</span><span class="p">,</span> <span class="s2">&quot;private&quot;</span><span class="p">,</span> <span class="s2">&quot;public&quot;</span><span class="p">,</span> <span class="s2">&quot;team&quot;</span><span class="p">,</span> <span class="s2">&quot;partner&quot;</span><span class="p">]</span>
+    <span class="n">_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># workspace id</span>
+    <span class="n">_api</span><span class="p">:</span> <span class="n">PostmanApi</span>  <span class="c1"># API object</span>
+    <span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span>  <span class="c1"># the workspace Postman JSON object</span>
+    <span class="n">_tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># the workspace tags as an array</span>
+    <span class="n">_global_variables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span>
+        <span class="nb">object</span>
+    <span class="p">]</span>  <span class="c1"># the workspace global variables as an array of JSON objects</span>
+    <span class="n">_updated_at</span><span class="p">:</span> <span class="n">datetime</span>  <span class="c1"># local update timestamp</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">:</span> <span class="n">PostmanApi</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_api</span> <span class="o">=</span> <span class="n">api</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_global_variables</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updated_at</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">uid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">postman_api</span><span class="o">.</span><span class="n">api_key</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_workspace</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+
+    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updated_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">)</span>
+
+    <span class="nd">@description</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updated_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">visibility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;visibility&quot;</span><span class="p">)</span>
+
+    <span class="nd">@visibility</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">visibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;visibility&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updated_at</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">created_by</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;createdBy&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updated_by</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;updatedBy&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">created_at</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;createdAt&quot;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.000Z&quot;</span><span class="p">,</span> <span class="s2">&quot;+00:00&quot;</span><span class="p">)</span>  <span class="c1"># for Python &lt; 3.11</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updated_at</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;updatedAt&quot;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.000Z&quot;</span><span class="p">,</span> <span class="s2">&quot;+00:00&quot;</span><span class="p">)</span>  <span class="c1"># for Python &lt; 3.11</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;collections&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;apis&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_tags</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">global_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global_variables</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_global_variables</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global_variables</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">postman_api</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PostmanApi</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The Postman API object associated with this workspace&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># COLLECTIONS</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="WorkspaceManager.create_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.create_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">collectionSchemaUrl</span><span class="o">=</span><span class="s2">&quot;https://schema.getpostman.com/json/collection/v2.1.0/collection.json&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper to create a collection for this workspace.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">postman_api</span><span class="o">.</span><span class="n">create_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">collectionSchemaUrl</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.delete_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.delete_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper to delete a collection from this workspace.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">postman_api</span><span class="o">.</span><span class="n">delete_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.get_collection_id_by_name">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.get_collection_id_by_name">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_collection_id_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a collection ID by name.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">collections</span><span class="p">:</span> <span class="c1"># check for empty workspace</span>
+            <span class="k">for</span> <span class="n">collection</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">collections</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">collection</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">collection_name</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">collection</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="WorkspaceManager.replace_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.replace_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper to replace a collection in this workspace.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">postman_api</span><span class="o">.</span><span class="n">replace_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="WorkspaceManager.import_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.import_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">import_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Import a Postman collection in this workspace&quot;&quot;&quot;</span>
+        <span class="n">collection_info</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>    
+        <span class="n">collection_name</span> <span class="o">=</span> <span class="n">collection_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="n">collection_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_collection_id_by_name</span><span class="p">(</span><span class="n">collection_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">collection_id</span> <span class="ow">and</span> <span class="n">replace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">postman_api</span><span class="o">.</span><span class="n">replace_collection</span><span class="p">(</span><span class="n">collection_id</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">collection_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postman_api</span><span class="o">.</span><span class="n">import_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_workspace</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">collection_id</span></div>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># VARIABLES</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="WorkspaceManager.get_global_variables">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.get_global_variables">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_global_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the workspace global variables&quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;workspaces/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">/global-variables&quot;</span><span class="p">,</span> <span class="s2">&quot;Get workspace variables&quot;</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.set_global_variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.set_global_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_global_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;set_global_variable not implemented.&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.unset_global_variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.unset_global_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unset_global_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;unset_global_variable not implemented.&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+
+    <span class="c1">#</span>
+    <span class="c1"># WORKSPACE</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="WorkspaceManager.get_workspace">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.get_workspace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_workspace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the workspace information&quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;workspaces/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Get workspace information&quot;</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.get_workspace_tags">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.get_workspace_tags">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_workspace_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the workspace tags (Enterprise only)&quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;workspaces/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">/tags&quot;</span><span class="p">,</span> <span class="s2">&quot;Get workspace tags&quot;</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.get_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.get_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy to Postman API get_collection method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">postman_api</span><span class="o">.</span><span class="n">get_collection</span><span class="p">(</span><span class="n">collection_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.refresh_workspace">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.refresh_workspace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_workspace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refresh the workspace data from the API&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_workspace</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;workspace&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.refresh_tags">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.refresh_tags">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refresh the workspace tags from the API&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_workspace_tags</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;tags&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tag</span><span class="p">[</span><span class="s2">&quot;slug&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span></div>
+
+
+<div class="viewcode-block" id="WorkspaceManager.refresh_global_variables">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.refresh_global_variables">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_global_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refresh the workspace global variables from the API&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_global_variables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_global_variables</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_variables</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CollectionManager">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CollectionManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to interact with an existing Postman collection&quot;&quot;&quot;</span>
+
+    <span class="n">_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Postman collection id</span>
+    <span class="n">_api</span><span class="p">:</span> <span class="n">PostmanApi</span>  <span class="c1"># API object</span>
+    <span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span>  <span class="c1"># the underlying Postman JSON object</span>
+    <span class="n">_updated_at</span><span class="p">:</span> <span class="n">datetime</span>  <span class="c1"># local update timestamp</span>
+    <span class="n">_tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># the collection tags as an array (enterprise only)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">:</span> <span class="n">PostmanApi</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">collection_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_api</span> <span class="o">=</span> <span class="n">api</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updated_at</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">refresh</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_collection_data</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_collection_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+
+    <span class="nd">@description</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="c1"># PATCH</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;collection&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">}}}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">patch_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Patching collection info description&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CollectionManager.patch_info">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.patch_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">patch_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;collection&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">}}</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Patch info data: </span><span class="si">{</span><span class="n">patch_data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">patch_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Patching collection info&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+
+    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="c1"># PATCH</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;collection&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">}}}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">patch_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Patching collection info name&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">uid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uid&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;variable&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;variable&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CollectionManager.get_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.get_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch collection data from API&quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">get_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Get collection information&quot;</span>
+        <span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="CollectionManager.refresh_collection_data">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.refresh_collection_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_collection_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refreshes the cached collection data from the API&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_collection</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;collection&quot;</span><span class="p">]</span></div>
+
+        
+    
+<div class="viewcode-block" id="CollectionManager.replace_collection">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.replace_collection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy for Postman API replace_collection method&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">replace_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span></div>
+
+
+    <span class="c1"># FOLDER</span>
+<div class="viewcode-block" id="CollectionManager.get_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.get_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">get_folder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollectionManager.delete_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.delete_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">delete_folder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollectionManager.update_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.update_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">update_folder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollectionManager.create_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.create_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">create_folder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">)</span></div>
+
+
+    <span class="c1"># VARIABLES</span>
+<div class="viewcode-block" id="CollectionManager.get_variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.get_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">variable</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="CollectionManager.patch_variables">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.patch_variables">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">patch_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sanitize_variables</span><span class="p">()</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;collection&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">]}}</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Patch variables data: </span><span class="si">{</span><span class="n">patch_data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">patch_request</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;collections/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Patching collection variables&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+
+<div class="viewcode-block" id="CollectionManager.sanitize_variables">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.sanitize_variables">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sanitize_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove properties from the variables that would cause an error.</span>
+<span class="sd">        These may be set and returned by the API but should not be submitted back.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="n">variable</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollectionManager.set_variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.set_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds or updates a variable in the collection&quot;&quot;&quot;</span>
+        <span class="c1"># analyze and adjust type</span>
+        <span class="n">value_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+        <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <span class="s2">&quot;str&quot;</span><span class="p">:</span>
+            <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+        <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
+            <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;integer&quot;</span>
+        <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <span class="s2">&quot;float&quot;</span><span class="p">:</span>
+            <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;number&quot;</span>
+        <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <span class="s2">&quot;bool&quot;</span><span class="p">:</span>
+            <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;boolean&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported data type </span><span class="si">{</span><span class="n">value_type</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># get or create variable</span>
+        <span class="n">variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variable</span><span class="p">:</span>  <span class="c1"># create it</span>
+            <span class="n">variable</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+        <span class="c1"># set variable properties</span>
+        <span class="n">variable</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">variable</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_type</span>
+        <span class="n">variable</span><span class="p">[</span><span class="s2">&quot;disabled&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">disabled</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_variables</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CollectionManager.rename_variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.rename_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rename_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;renames a variable in the collection&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">old_key</span><span class="p">:</span>
+                <span class="n">variable</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_key</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_variables</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable </span><span class="si">{</span><span class="n">old_key</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="CollectionManager.unset_variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.CollectionManager.unset_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unset_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;removes a variable from the collection&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">variable</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_variables</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DataProductCollectionManager">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.DataProductCollectionManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataProductCollectionManager</span><span class="p">(</span><span class="n">CollectionManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to interact with a Postman collection specializing in data.    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_dartfx_variable_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_dartfx_data</span><span class="p">:</span> <span class="nb">dict</span>
+
+<div class="viewcode-block" id="DataProductCollectionManager.factory">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.DataProductCollectionManager.factory">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">factory</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">api</span><span class="p">:</span> <span class="n">PostmanApi</span><span class="p">,</span>
+        <span class="n">workspace_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dartfx_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dartfx_variable_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_dartfx&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new data product collection&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dartfx_id</span><span class="p">:</span>  <span class="c1"># generate an id if not provided</span>
+            <span class="n">dartfx_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="n">dartfx_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">dartfx_id</span><span class="p">}</span>
+        <span class="n">dartfx_variable_item</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">dartfx_variable_name</span><span class="p">,</span>
+            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">dartfx_data</span><span class="p">),</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;disabled&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">dartfx_variable_item</span><span class="p">]</span>
+        <span class="n">collection_id</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">create_collection</span><span class="p">(</span><span class="n">workspace_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">dartfx_variable_name</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">:</span> <span class="n">PostmanApi</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dartfx_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_dartfx&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dartfx_variable_name</span> <span class="o">=</span> <span class="n">dartfx_variable</span>
+
+
+    <span class="c1"># DartFX data storage</span>
+<div class="viewcode-block" id="DataProductCollectionManager.get_dartfx_data">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.DataProductCollectionManager.get_dartfx_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dartfx_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dartfx_variable_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dartfx_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span> <span class="c1"># return the variable value as dictionary</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dartfx_data</span></div>
+
+
+<div class="viewcode-block" id="DataProductCollectionManager.set_dartfx_data">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.DataProductCollectionManager.set_dartfx_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_dartfx_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dartfx_variable_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dartfx_data</span><span class="p">)</span></div>
+
+
+    <span class="c1"># DartFX variable</span>
+<div class="viewcode-block" id="DataProductCollectionManager.get_dartfx_variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.DataProductCollectionManager.get_dartfx_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dartfx_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dartfx_data</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataProductCollectionManager.set_dartfx_variable">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.DataProductCollectionManager.set_dartfx_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_dartfx_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_dartfx_data</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_dartfx_data</span><span class="p">()</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_dartfx_data</span><span class="p">()</span></div>
+
+
+    <span class="c1"># Folders</span>
+<div class="viewcode-block" id="DataProductCollectionManager.register_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.DataProductCollectionManager.register_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="DataProductCollectionManager.get_registered_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.DataProductCollectionManager.get_registered_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_registered_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+</div>
+
+    
+    
+<div class="viewcode-block" id="FolderManager">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.FolderManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FolderManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to interact with an existing Postman folder&quot;&quot;&quot;</span>
+
+    <span class="n">_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Postman folder id</span>
+    <span class="n">_collection_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Postman collection id</span>
+    <span class="n">_api</span><span class="p">:</span> <span class="n">PostmanApi</span>  <span class="c1"># API object</span>
+    <span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span>  <span class="c1"># the underlying Postman JSON object</span>
+    <span class="n">_updated_at</span><span class="p">:</span> <span class="n">datetime</span>  <span class="c1"># local update timestamp</span>
+    <span class="n">_tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># the collection tags as an array (enterprise only)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">:</span> <span class="n">PostmanApi</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">folder_id</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection_id</span> <span class="o">=</span> <span class="n">collection_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">folder_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_api</span> <span class="o">=</span> <span class="n">api</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updated_at</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">refresh</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_data</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+
+<div class="viewcode-block" id="FolderManager.refresh_data">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.FolderManager.refresh_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refreshes the cached collection data from the API&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_collection</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;collection&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="FolderManager.create_folder">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.FolderManager.create_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">create_folder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Pascal Heus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
