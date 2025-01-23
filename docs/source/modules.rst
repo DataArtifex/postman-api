@@ -8,16 +8,16 @@ Postman API
    :undoc-members:
    :show-inheritance:
 
-Postman Collection (Data Classes)
----------------------------------
+Postman Collection (Pydantic)
+-----------------------------
 .. automodule:: dartfx.postmanapi.postman_collection
    :members:
    :undoc-members:
    :show-inheritance:
 
-Postman Collection (Pydantic)
------------------------------
-.. automodule:: dartfx.postmanapi.postman_collection_pd
+Postman Collection (Data Classes)
+---------------------------------
+.. automodule:: dartfx.postmanapi.postman_collection_dc
    :members:
    :undoc-members:
    :show-inheritance:
