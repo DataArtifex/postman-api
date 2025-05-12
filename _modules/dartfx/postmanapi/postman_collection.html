@@ -395,16 +395,19 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span></div>
 
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Helper function to create javascript test event</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Item.create_javascript_test_event">
-<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection.Item.create_javascript_test_event">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_javascript_test_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Item.add_test_script">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman_collection.Item.add_test_script">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_test_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">script</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a &#39;test&#39; event script to the item.&quot;&quot;&quot;</span>
         <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">listen</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
         <span class="n">event</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="n">Script</span><span class="p">()</span>
         <span class="k">if</span><span class="p">(</span><span class="n">script</span><span class="p">):</span>
-            <span class="n">event</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">exec</span> <span class="o">=</span> <span class="n">script</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">script</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">exec</span> <span class="o">=</span> <span class="n">lines</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">event</span></div>
 </div>
