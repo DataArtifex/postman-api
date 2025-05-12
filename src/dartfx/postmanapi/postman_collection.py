@@ -241,14 +241,17 @@ class Item(CollectionResource):
         self.request = request
         return self.request
 
-    """
-    Helper function to create javascript test event
-    """
-    def create_javascript_test_event(self, script=None):
+    def add_test_script(self, script:str=None):
+        """Add a 'test' event script to the item."""
         event = Event()
+        event.listen = "test"
         event.script = Script()
         if(script):
-            event.script.exec = script
+            lines = []
+            for line in script.splitlines():
+                line.replace('"', '\"')
+                lines.append(line)
+            event.script.exec = lines
         self.add_event(event)
         return event
 

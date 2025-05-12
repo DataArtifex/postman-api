@@ -4,5 +4,6 @@
         "OKBLUE",
         "postmanapi"
     ],
-    "dbcode.connections": []
+    "dbcode.connections": [],
+    "postman.settings.dotenv-detection-notification-visibility": false
 }

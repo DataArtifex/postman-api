@@ -135,7 +135,7 @@ class PostmanApi:
         return data["collection"]["uid"]
 
     def delete_collection(self, collection_id) -> str:
-        """Delete a Postman collection
+        """ Delete a Postman collection.
 
         Args:
             collection_id (str): The ID of the collection
@@ -435,7 +435,7 @@ class PostmanApi:
     # WORKSPACES
     #
     def create_workspace(
-        self, name: str, type: WorkspaceType, description: str = None
+        self, name: str, type: WorkspaceType|str, description: str = None
     ) -> str:
         """Create a new Postman workspace.
 
@@ -452,10 +452,12 @@ class PostmanApi:
 
         """
         # prepare data
+        if isinstance(type, PostmanApi.WorkspaceType):
+            type = type.value
         data = {
             "workspace": {
                 "name": name,
-                "type": type.value,
+                "type": type,
                 "description": description,
             }
         }
@@ -464,7 +466,7 @@ class PostmanApi:
             "workspaces", f"Create workspace {name}", json=data
         )
         data = response.json()
-        return data["workspace"]["uid"]
+        return data["workspace"]["id"]
 
     def delete_workspace(self, workspace_id) -> str:
         """Delete a Postman workspace
@@ -502,6 +504,34 @@ class PostmanApi:
         data = response.json()
         return data["workspaces"]       
         
+    def update_workspace(self, workspace_id:str, name: str, description: str, type: WorkspaceType|str) -> dict:
+        """ Update a Postman workspace
+
+        Args:
+            workspace_id (str): The ID of the workspace
+            name (str, optional): The name of the workspace. Defaults to None.  
+            description (str, optional): The description of the workspace. Defaults to None.
+            type (WorkspaceType|str, optional): The type of the workspace. Defaults to None.
+
+        Returns:
+            dict: The updated workspace data
+        """
+        if type: 
+            if isinstance(type, PostmanApi.WorkspaceType):
+                type = type.value
+        data = {
+            "workspace": {
+                "name": name,
+                "description": description,
+                "type": type
+            }
+        }
+        # call API
+        response = self.put_request(
+            f"workspaces/{workspace_id}", f"Update workspace {name}", json=data
+        )
+        data = response.json()
+        return data
 
 class PostmanApiError(Exception):
     """Custom exception for Postman API errors."""
@@ -544,6 +574,10 @@ class WorkspaceManager:
         self._updated_at = None
 
     @property
+    def api(self) -> PostmanApi:
+        return self._api
+
+    @property
     def id(self) -> str:
         return self._id
 
@@ -569,6 +603,11 @@ class WorkspaceManager:
     @property
     def type(self) -> str:
         return self.data.get("type")
+
+    @type.setter
+    def type(self, value: str):
+        self._data["type"] = value
+        self._updated_at = datetime.now()
 
     @property
     def description(self) -> str:
@@ -957,7 +996,6 @@ class DataProductCollectionManager(CollectionManager):
     def __init__(self, api: PostmanApi, collection_id: str, dartfx_variable: str = "_dartfx"):
         super().__init__(api, collection_id)
         self._dartfx_variable_name = dartfx_variable
-
 
     # DartFX data storage
     def get_dartfx_data(self, refresh=True):
