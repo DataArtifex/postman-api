@@ -1012,7 +1012,7 @@ class DataProductCollectionManager(CollectionManager):
 
     def set_dartfx_variable(self, key: str, value):
         if value:
-            self.get_dartfx_data().set[key] = value
+            self.get_dartfx_data()[key] = value
         else:
             self.get_dartfx_data().pop(key, None)
         return self.set_dartfx_data()
