@@ -796,7 +796,7 @@ class CollectionManager:
 
     @property
     def description(self):
-        return self.data.get("info").get("name")
+        return self.data["info"].get("description")
 
     @description.setter
     def description(self, value: str):
