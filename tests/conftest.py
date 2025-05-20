@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
 from pathlib import Path
+import os
+from dartfx.postmanapi import postman
 import pytest
 
 @pytest.fixture(scope="session", autouse=True)
