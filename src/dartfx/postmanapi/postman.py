@@ -860,7 +860,7 @@ class CollectionManager:
             f"collections/{self._id}", "Get collection information"
         )
         data = response.json()
-        print(data)
+        logging.debug(data)
         return data
 
 

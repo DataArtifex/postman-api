@@ -3,6 +3,7 @@ from dartfx.postmanapi import postman_collection
 from dartfx.postmanapi.langchain import tools
 from dartfx.postmanapi.langchain.tools import create_collection
 import json
+import logging
 from langchain_core.runnables import chain
 from langchain_core.tools import InjectedToolArg,tool
 from langchain.globals import set_debug, set_verbose
@@ -38,14 +39,14 @@ def test_annotation_import_collection():
 
 def test_invoke_get_user_profile():
     data = tools.get_user_profile.invoke({'api_key': api_key})
-    print(data)
+    logging.debug(data)
     assert data.get('id')
     assert data.get('username')
    
     
 def test_invoke_get_personal_workspaces():
     data = tools.get_workspaces.invoke({'api_key': api_key, 'type': 'personal'})
-    print(data)
+    logging.debug(data)
     assert len(data) > 0
 
 def test_tool_create_collection():
