@@ -35,10 +35,11 @@ class PostmanApi:
     #
     # CORE HTTP REQUESTS
     #
-    def request(self, method, endpoint, description, headers={}, success=200, **kwargs):
+    def request(self, method, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API."""
         url = f"https://api.getpostman.com/{endpoint}"
         # prepare headers
+        headers = headers or {}
         headers = {
             "X-API-KEY": self.api_key,
             "Content-Type": "application/json",
@@ -53,34 +54,34 @@ class PostmanApi:
             logging.error(response.text)
             raise PostmanApiError(description, url, response.status_code, response)
 
-    def delete_request(self, endpoint, description, headers={}, success=200, **kwargs):
+    def delete_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the DEL method."""
         return self.request(
-            "delete", endpoint, description, headers={}, success=200, **kwargs
+            "delete", endpoint, description, headers=headers, success=200, **kwargs
         )
 
-    def get_request(self, endpoint, description, headers={}, success=200, **kwargs):
+    def get_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the GET method."""
         return self.request(
-            "get", endpoint, description, headers={}, success=200, **kwargs
+            "get", endpoint, description, headers=headers, success=200, **kwargs
         )
 
-    def post_request(self, endpoint, description, headers={}, success=200, **kwargs):
+    def post_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the POST method."""
         return self.request(
-            "post", endpoint, description, headers={}, success=200, **kwargs
+            "post", endpoint, description, headers=headers, success=200, **kwargs
         )
 
-    def patch_request(self, endpoint, description, headers={}, success=200, **kwargs):
+    def patch_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the PATCH method."""
         return self.request(
-            "patch", endpoint, description, headers={}, success=200, **kwargs
+            "patch", endpoint, description, headers=headers, success=200, **kwargs
         )
 
-    def put_request(self, endpoint, description, headers={}, success=200, **kwargs):
+    def put_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the PUT method."""
         return self.request(
-            "put", endpoint, description, headers={}, success=200, **kwargs
+            "put", endpoint, description, headers=headers, success=200, **kwargs
         )
 
     #
