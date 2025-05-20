@@ -167,7 +167,7 @@ class PostmanApi:
 
         """
         response = self.get_request(
-            f"collections/{collection_id}", f"Get collection {id}"
+            f"collections/{collection_id}", f"Get collection {collection_id}"
         )
         data = response.json()
         return data
