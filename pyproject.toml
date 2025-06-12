@@ -24,16 +24,25 @@ classifiers = [
 ]
 dependencies = [
   "pydantic>=2",
-  "requests>=2"
+  "requests>=2",
+  "python-dotenv>=1.0",
 ]
 
 
 [project.optional-dependencies]
 langchain = [
   "langchain>=0.3",
+  "langchain_core>=0.3",
+  "langchain_openai>=0.3",
+  "langchain_groq>=0.3",
   "pydantic>=2"
 ]
-
+docs = [
+  "sphinx>=7.0",
+  "sphinx_rtd_theme>=2.0",
+  "sphinx-copybutton>=0.5",
+  "myst-parser>=0.20",
+]
 
 [project.urls]
 Documentation = "https://github.com/DataArtifex/postman-api#readme"
