@@ -35,7 +35,11 @@ class CollectionResource(BaseModel):
     #
     # SERIALIZER
     #
-    def toJSON(self, indent=None):
+    
+    def to_dict(self) -> dict[str, Any]:
+        return self.model_dump(by_alias=True, exclude_none=True)
+    
+    def to_json(self, indent=None) -> str:
         return self.model_dump_json(by_alias=True, exclude_unset=True, exclude_none=True)
 
     def save(self, filepath, indent=4, format="json"):
@@ -49,11 +53,11 @@ class CollectionResource(BaseModel):
     # DESERIALIZER
     #
     @classmethod
-    def from_dict(cls, data: dict) -> Any:
+    def from_dict(cls, data: dict) -> CollectionResource:
         return cls.model_validate(data)
 
     @classmethod
-    def from_json(cls, json_str: str) -> Collection:
+    def from_json(cls, json_str: str) -> CollectionResource:
         data = json.loads(json_str)
         return cls.from_dict(data)
 
@@ -268,7 +272,7 @@ class ItemGroup(CollectionResource): # item-group in JSON schema
     @field_validator("item", mode="before")
     @classmethod
     def determine_item_type(cls, value):
-        """Callable discriminator for a list of Foo and Bar"""
+        """Callable discriminator for a list of Item and ItemGroup"""
         if not isinstance(value, list):
             raise ValueError("'item' must be a list")
         parsed_items = []
@@ -356,9 +360,17 @@ class URL(CollectionResource):
         self.query.append(param)
 
     """
-    Helper function to create a query parameter
+    Add a variable to this URL, initializing the query array if needed.
     """
-    def create_query_parameter(self, key, value=None, description=None, disabled=False):
+    def add_variable(self, variable):
+        if not self.variable:
+            self.variable = []
+        self.variable.append(variable)
+
+    """
+    Helper function to create and add a query parameter
+    """
+    def create_query_parameter(self, key:str, value:str|None=None, description:str|None=None, disabled:bool|None=False):
         param = QueryParam()
         param.key = key
         if value:
@@ -369,6 +381,19 @@ class URL(CollectionResource):
             param.disabled = disabled
         self.add_query_param(param)
         return param
+
+    """
+    Helper function to create and add a variable
+    """
+    def create_variable(self, key:str, value:str|None=None, description:str|None=None):
+        variable = Variable()
+        variable.key = key
+        if value:
+            variable.value = value
+        if description:
+            variable.description = description
+        self.add_variable(variable)
+        return variable
 
 class Variable(CollectionResource):
     id: Optional[str] = None

@@ -771,6 +771,10 @@ class WorkspaceManager:
         self._global_variables = data["values"]
         return self.global_variables
 
+    def update_workspace(self):
+        data = self._api.update_workspace(
+            self._id, self._data["name"], self._data["description"], self._data["type"])
+        return data
 
 class CollectionManager:
     """Helper to interact with an existing Postman collection"""
