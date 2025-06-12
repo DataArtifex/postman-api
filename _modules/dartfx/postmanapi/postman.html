@@ -971,8 +971,15 @@
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_global_variables</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_global_variables</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_variables</span></div>
-</div>
 
+
+<div class="viewcode-block" id="WorkspaceManager.update_workspace">
+<a class="viewcode-back" href="../../../modules.html#dartfx.postmanapi.postman.WorkspaceManager.update_workspace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_workspace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_api</span><span class="o">.</span><span class="n">update_workspace</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+</div>
 
 
 <div class="viewcode-block" id="CollectionManager">
