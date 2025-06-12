@@ -53,3 +53,4 @@ def test_create_delete_workspace():
     api = get_api()
     id = api.create_workspace('test_workspace',"personal")
     api.delete_workspace(id)
+
