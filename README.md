@@ -1,7 +1,7 @@
 # Postman API
 
-[![PyPI - Version](https://img.shields.io/pypi/v/hatch-foo.svg)](https://pypi.org/project/hatch-foo)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hatch-foo.svg)](https://pypi.org/project/hatch-foo)
+[![PyPI - Version](https://img.shields.io/pypi/v/dartfx-postmanapi.svg)](https://pypi.org/project/dartfx-postmanapi)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dartfx-postmanapi.svg)](https://pypi.org/project/dartfx-postmanapi)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
 
 **This project is in its early development stages. Stability is not guaranteed, and documentation is limited. We welcome your feedback and contributions as we refine and expand this project together!**
@@ -22,7 +22,7 @@ This package also includes Python classes to read/write Postman collections base
  
 An optional feature is under development to facilitate [tools calling](https://python.langchain.com/docs/concepts/tool_calling/) from [LangChain](https://www.langchain.com/) / [LangGraph](https://langchain-ai.github.io/langgraph/).
 
-This package is a component of the [Data Artifex](https://github.com/dataartifex) project. It is being released independently of the Data Artifex [Postman Toolit]((https://github.com/dataartifex/postman-toolkit)) package to allow its use by any developer working with Postman.
+This package is a component of the [Data Artifex](https://github.com/dataartifex) project. It is being released independently of the Data Artifex [Postman Toolkit]((https://github.com/dataartifex/postman-toolkit)) package to allow its use by any developer working with Postman.
 
 
 ## Installation
@@ -93,16 +93,3 @@ Upon completion, open the `docs/build/index.html` file in your browser.
 5. Submit a pull request :D
 
  
-## License
- 
-The MIT License (MIT)
-
-Copyright (c) 2024 Pascal L.G.A. Heus
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
