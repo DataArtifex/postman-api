@@ -3,16 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "dartfx-postmanapi"
+name = "hatch-foo"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
 keywords = []
-authors = [
-  { name = "kulnor", email = "pascal.heus@gmail.com" },
-]
+authors = [{ name = "kulnor", email = "pascal.heus@gmail.com" }]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -20,39 +18,22 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
-dependencies = [
-  "pydantic>=2",
-  "requests>=2",
-  "python-dotenv>=1.0",
-]
-
-
-[project.optional-dependencies]
-langchain = [
-  "langchain>=0.3",
-  "langchain_core>=0.3",
-  "langchain_openai>=0.3",
-  "langchain_groq>=0.3",
-  "pydantic>=2"
-]
+dependencies = []
 
 [project.urls]
-Documentation = "https://github.com/DataArtifex/postman-api#readme"
-Issues = "https://github.com/DataArtifex/postman-api/issues"
-Source = "https://github.com/DataArtifex/postman-api"
+Documentation = "https://github.com/DataArtifex/hatch-foo#readme"
+Issues = "https://github.com/DataArtifex/hatch-foo/issues"
+Source = "https://github.com/DataArtifex/hatch-foo"
 
 
 [tool.hatch.build.targets.sdist]
-exclude = [
-  "/.github",
-  "/docs",
-]
+exclude = ["/.github", "/docs"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dartfx"]
 
 [tool.hatch.version]
-path = "src/dartfx/postmanapi/__about__.py"
+path = "src/dartfx/hatch_foo/__about__.py"
 
 [dependency-groups]
 dev = [
@@ -65,10 +46,10 @@ dev = [
   "pre-commit>=3.0.0",
 ]
 docs = [
-  "sphinx>=7.0",
-  "sphinx_rtd_theme>=2.0",
+  "sphinx>=7.0.0",
+  "sphinx-rtd-theme>=1.2.0",
   "myst-parser>=5.0.0",
-  "sphinx-copybutton>=0.5",
+  "sphinx-copybutton>=0.5.0",
 ]
 
 [tool.hatch.envs.default]
@@ -85,7 +66,7 @@ python = ["3.12", "3.13"]
 [tool.hatch.envs.types]
 dependencies = ["dev"]
 [tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/dartfx/postmanapi tests}"
+check = "mypy --install-types --non-interactive {args:src/dartfx/hatch_foo tests}"
 
 [tool.hatch.envs.docs]
 dependencies = ["docs"]
@@ -97,23 +78,17 @@ serve = "python -m http.server -d docs/build/html"
 allow-direct-references = true
 
 [tool.coverage.run]
-source_pkgs = ["postmanapi", "tests"]
+source_pkgs = ["hatch_foo", "tests"]
 branch = true
 parallel = true
-omit = [
-  "src/dartfx/postmanapi/__about__.py",
-]
+omit = ["src/dartfx/hatch_foo/__about__.py"]
 
 [tool.coverage.paths]
-source = ["src/dartfx/postmanapi", "*/postman-api/src/dartfx/postmanapi"]
-tests = ["tests", "*/dartfx/postmanapi/tests"]
+source = ["src/dartfx/hatch_foo", "*/hatch-foo/src/dartfx/hatch_foo"]
+tests = ["tests", "*/dartfx/hatch-foo/tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 [tool.pytest.ini_options]
 pythonpath = "src"
