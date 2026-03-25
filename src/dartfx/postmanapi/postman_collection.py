@@ -16,6 +16,7 @@ Known issues:
 
 
 """
+
 from __future__ import annotations
 
 import json
@@ -28,9 +29,10 @@ from pydantic import BaseModel, Field, field_validator
 # DATA CLASSES
 #
 
+
 class CollectionResource(BaseModel):
-    """Base class for all Postman collection resource.
-    """
+    """Base class for all Postman collection resource."""
+
     #
     # SERIALIZER
     #
@@ -43,7 +45,7 @@ class CollectionResource(BaseModel):
 
     def save(self, filepath, indent=4, format="json"):
         if format == "json":
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 json.dump(self.model_dump(by_alias=True, exclude_none=True), f, indent=indent)
         else:
             raise ValueError(f"Unsupported format: {format}")
@@ -66,8 +68,9 @@ class CollectionResource(BaseModel):
             data = json.load(file)
         return cls.from_dict(data)
 
+
 class Auth(CollectionResource):
-    type: str | None = None # apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm
+    type: str | None = None  # apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm
     noauth: None = None
     apikey: list[AuthAttribute] | None = None
     awsv4: list[AuthAttribute] | None = None
@@ -88,7 +91,7 @@ class AuthAttribute(CollectionResource):
 
 
 class Body(CollectionResource):
-    mode: str | None = None # raw, urlencoded, formdata, file, graphql
+    mode: str | None = None  # raw, urlencoded, formdata, file, graphql
     raw: str | None = None
     graphql: object | None = None
     urlencoded: list[BodyUrlEncoded] | None = None
@@ -102,14 +105,16 @@ class BodyFile(CollectionResource):
     src: str | None = None
     content: str | None = None
 
+
 class BodyFormData(CollectionResource):
     key: str | None = None
-    value: str | None = None # for type=text
-    src: list[str] | str | None = None # for type=file
+    value: str | None = None  # for type=text
+    src: list[str] | str | None = None  # for type=file
     disabled: bool | None = None
-    type: str | None = None # test | file
+    type: str | None = None  # test | file
     contentType: str | None = None
     description: Description | str | None = None
+
 
 class BodyUrlEncoded(CollectionResource):
     key: str | None = None
@@ -128,6 +133,7 @@ class Certificate(CollectionResource):
 
 class CertificateSrc(CollectionResource):
     src: str | None = None
+
 
 class Collection(CollectionResource):
     info: Info | None = None
@@ -161,6 +167,7 @@ class Collection(CollectionResource):
                 raise ValueError(f"Invalid format: {item} must be a dictionary")
         return parsed_items
 
+
 class Cookie(CollectionResource):
     domain: str | None = None
     path: str | None = None
@@ -174,10 +181,12 @@ class Cookie(CollectionResource):
     value: str | None = None
     extensions: list[Any] | None = None
 
+
 class Description(CollectionResource):
     content: str | None = None
     type: str | None = None
     version: Version | str | None = None
+
 
 class Event(CollectionResource):
     listen: str | None = None
@@ -192,15 +201,17 @@ class Header(CollectionResource):
     disabled: bool | None = None
     description: Description | str | None = None
 
+
 class Info(CollectionResource):
     # schema_field is aliased to schema to prevent naming conflict with Pydantic BaseModel
     name: str | None = None
-    schema_: str = Field(alias='schema', default="https://schema.getpostman.com/json/collection/v2.1.0/collection.json")
-    postman_id: str | None = Field(alias='_postman_id', default=None)
-    exporter_id: str | None = Field(alias='_exporter_id', default=None) # EXPORTED BUT NOT IN JSON SCHEMA
-    collection_link: str | None = Field(alias='_collection_link', default=None) # EXPORTED BUT NOT IN JSON SCHEMA
+    schema_: str = Field(alias="schema", default="https://schema.getpostman.com/json/collection/v2.1.0/collection.json")
+    postman_id: str | None = Field(alias="_postman_id", default=None)
+    exporter_id: str | None = Field(alias="_exporter_id", default=None)  # EXPORTED BUT NOT IN JSON SCHEMA
+    collection_link: str | None = Field(alias="_collection_link", default=None)  # EXPORTED BUT NOT IN JSON SCHEMA
     description: Description | str | None = None
     version: Version | str | None = None
+
 
 class Item(CollectionResource):
     request: Request | None = None
@@ -216,10 +227,10 @@ class Item(CollectionResource):
         if not self.request:
             self.request = Request()
 
-
     """
     Add an event to this item, initializing the event array if needed.
     """
+
     def add_event(self, event):
         if not self.event:
             self.event = []
@@ -228,7 +239,8 @@ class Item(CollectionResource):
     """
     Helper function to create request
     """
-    def create_request(self, url, method='GET'):
+
+    def create_request(self, url, method="GET"):
         request = Request()
         request.method = method
         request.url = URL()
@@ -238,7 +250,7 @@ class Item(CollectionResource):
         if url_components.port:
             request.url.port = url_components.port
         if len(url_components.path) > 1:
-            request.url.path = url_components.path.split('/')[1:]
+            request.url.path = url_components.path.split("/")[1:]
         if url_components.fragment:
             request.url.hash = url_components.fragment
         self.request = request
@@ -249,17 +261,17 @@ class Item(CollectionResource):
         event = Event()
         event.listen = "test"
         event.script = Script()
-        if(script):
+        if script:
             lines = []
             for line in script.splitlines():
-                line.replace('"', '\"')
+                line.replace('"', '"')
                 lines.append(line)
             event.script.exec = lines
         self.add_event(event)
         return event
 
 
-class ItemGroup(CollectionResource): # item-group in JSON schema
+class ItemGroup(CollectionResource):  # item-group in JSON schema
     item: list[Item | ItemGroup] = Field(default_factory=list)
     name: str | None = None
     description: Description | str | None = None
@@ -287,16 +299,19 @@ class ItemGroup(CollectionResource): # item-group in JSON schema
                 raise ValueError(f"Invalid format: {item} must be a dictionary")
         return parsed_items
 
-class ProxyConfig(CollectionResource): # proxy-config in JSON schema
+
+class ProxyConfig(CollectionResource):  # proxy-config in JSON schema
     match: str | None = None
     host: str | None = None
     port: int | None = None
     tunnel: bool | None = False
     disabled: bool | None = None
 
-class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behavior in JSON schema
+
+class ProtocolProfileBehavior(CollectionResource):  # proxy-profile-behavior in JSON schema
     # Object with no properties in JSON schema
     pass
+
 
 class QueryParam(CollectionResource):
     key: str | None = None
@@ -304,12 +319,13 @@ class QueryParam(CollectionResource):
     disabled: bool | None = None
     description: Description | str | None = None
 
+
 class Request(CollectionResource):
     url: URL | str | None = None
     auth: Auth | None = None
     proxy: ProxyConfig | None = None
     certificate: Certificate | None = None
-    method: str | None = None # GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value
+    method: str | None = None  # GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value
     description: Description | str | None = None
     header: list[Header] | str | None = None
     body: Body | None = None
@@ -319,9 +335,10 @@ class Request(CollectionResource):
             self.header = []
         self.header.append(Header(key=key, value=value, description=description))
 
+
 class Response(CollectionResource):
     id: str | None = None
-    name: str | None = None # EXPORTED BUT NOT IN JSON SCHEMA
+    name: str | None = None  # EXPORTED BUT NOT IN JSON SCHEMA
     originalRequest: Request | None = None
     reponseTime: str | int | None = None
     timings: object | None = None
@@ -334,11 +351,12 @@ class Response(CollectionResource):
 
 
 class Script(CollectionResource):
-    id : str | None = None
+    id: str | None = None
     type: str | None = None
     exec: list[str] | str | None = None
     src: URL | str | None = None
     name: str | None = None
+
 
 class URL(CollectionResource):
     raw: str | None = None
@@ -353,6 +371,7 @@ class URL(CollectionResource):
     """
     Add a query parameter to this URL, initializing the query array if needed.
     """
+
     def add_query_param(self, param):
         if not self.query:
             self.query = []
@@ -361,6 +380,7 @@ class URL(CollectionResource):
     """
     Add a variable to this URL, initializing the query array if needed.
     """
+
     def add_variable(self, variable):
         if not self.variable:
             self.variable = []
@@ -369,7 +389,10 @@ class URL(CollectionResource):
     """
     Helper function to create and add a query parameter
     """
-    def create_query_parameter(self, key:str, value:str|None=None, description:str|None=None, disabled:bool|None=False):
+
+    def create_query_parameter(
+        self, key: str, value: str | None = None, description: str | None = None, disabled: bool | None = False
+    ):
         param = QueryParam()
         param.key = key
         if value:
@@ -384,7 +407,8 @@ class URL(CollectionResource):
     """
     Helper function to create and add a variable
     """
-    def create_variable(self, key:str, value:str|None=None, description:str|None=None):
+
+    def create_variable(self, key: str, value: str | None = None, description: str | None = None):
         variable = Variable()
         variable.key = key
         if value:
@@ -394,15 +418,17 @@ class URL(CollectionResource):
         self.add_variable(variable)
         return variable
 
+
 class Variable(CollectionResource):
     id: str | None = None
     key: str | None = None
     value: Any | None = None
-    type: str | None = None # string, boolean, any, number
+    type: str | None = None  # string, boolean, any, number
     name: str | None = None
     description: Description | str | None = None
     system: bool | None = None
     disabled: bool | None = None
+
 
 class Version(CollectionResource):
     major: int = 0
@@ -410,4 +436,3 @@ class Version(CollectionResource):
     patch: int = 0
     identifier: str | None = None
     meta: Any | None = None
-

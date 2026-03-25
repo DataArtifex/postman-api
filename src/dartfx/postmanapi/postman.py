@@ -1,6 +1,7 @@
 """
 Classes and helpers to interact with the Postman API, workspaces, collections, folders, and related resources.
 """
+
 import json
 import logging
 import uuid
@@ -58,33 +59,23 @@ class PostmanApi:
 
     def delete_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the DEL method."""
-        return self.request(
-            "delete", endpoint, description, headers=headers, success=success, **kwargs
-        )
+        return self.request("delete", endpoint, description, headers=headers, success=success, **kwargs)
 
     def get_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the GET method."""
-        return self.request(
-            "get", endpoint, description, headers=headers, success=success, **kwargs
-        )
+        return self.request("get", endpoint, description, headers=headers, success=success, **kwargs)
 
     def post_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the POST method."""
-        return self.request(
-            "post", endpoint, description, headers=headers, success=success, **kwargs
-        )
+        return self.request("post", endpoint, description, headers=headers, success=success, **kwargs)
 
     def patch_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the PATCH method."""
-        return self.request(
-            "patch", endpoint, description, headers=headers, success=success, **kwargs
-        )
+        return self.request("patch", endpoint, description, headers=headers, success=success, **kwargs)
 
     def put_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the PUT method."""
-        return self.request(
-            "put", endpoint, description, headers=headers, success=success, **kwargs
-        )
+        return self.request("put", endpoint, description, headers=headers, success=success, **kwargs)
 
     #
     # COLLECTIONS
@@ -140,7 +131,7 @@ class PostmanApi:
         return data["collection"]["uid"]
 
     def delete_collection(self, collection_id) -> str:
-        """ Delete a Postman collection.
+        """Delete a Postman collection.
 
         Args:
             collection_id (str): The ID of the collection
@@ -152,9 +143,7 @@ class PostmanApi:
             str: The ID of the collection
 
         """
-        response = self.delete_request(
-            f"collections/{collection_id}", f"Delete collection {id}"
-        )
+        response = self.delete_request(f"collections/{collection_id}", f"Delete collection {id}")
         data = response.json()
         return data["collection"]["id"]
 
@@ -171,9 +160,7 @@ class PostmanApi:
             dict: The collection data
 
         """
-        response = self.get_request(
-            f"collections/{collection_id}", f"Get collection {collection_id}"
-        )
+        response = self.get_request(f"collections/{collection_id}", f"Get collection {collection_id}")
         data = response.json()
         return data
 
@@ -201,7 +188,7 @@ class PostmanApi:
         data = response.json()
         return data["collection"]["id"]
 
-    def replace_collection(self, collection_id:str, collection: dict) -> str:
+    def replace_collection(self, collection_id: str, collection: dict) -> str:
         """Replaces a Postman collection from a populated dictionary
 
         Args:
@@ -220,7 +207,6 @@ class PostmanApi:
         )
         data = response.json()
         return data["collection"]["id"]
-
 
     #
     # FOLDERS
@@ -263,7 +249,7 @@ class PostmanApi:
         )
         folder_data = response.json()
         # transferring folder requires uid, so return that instead of just id
-        uid = folder_data["data"]["owner"]+'-'+folder_data["data"]["id"]
+        uid = folder_data["data"]["owner"] + "-" + folder_data["data"]["id"]
         return uid
 
     def get_folder(self, collection_id, folder_id) -> dict:
@@ -365,9 +351,7 @@ class PostmanApi:
             params["direction"] = direction
         if cursor:
             params["cursor"] = cursor
-        response = self.get_request(
-            f"tags/{slug}/elements", f"Get elements by tag {slug}", params=params
-        )
+        response = self.get_request(f"tags/{slug}/elements", f"Get elements by tag {slug}", params=params)
         data = response.json()
         return data
 
@@ -428,7 +412,6 @@ class PostmanApi:
         data = response.json()
         return data
 
-
     #
     # USER
     #
@@ -445,9 +428,7 @@ class PostmanApi:
     #
     # WORKSPACES
     #
-    def create_workspace(
-        self, name: str, type: WorkspaceType | str, description: str | None = None
-    ) -> str:
+    def create_workspace(self, name: str, type: WorkspaceType | str, description: str | None = None) -> str:
         """Create a new Postman workspace.
 
         Args:
@@ -473,9 +454,7 @@ class PostmanApi:
             }
         }
         # call API
-        response = self.post_request(
-            "workspaces", f"Create workspace {name}", json=data
-        )
+        response = self.post_request("workspaces", f"Create workspace {name}", json=data)
         data = response.json()
         return data["workspace"]["id"]
 
@@ -488,9 +467,7 @@ class PostmanApi:
         Returns:
             str: The ID of the workspace
         """
-        response = self.delete_request(
-            f"workspaces/{workspace_id}", f"Delete workspace {id}"
-        )
+        response = self.delete_request(f"workspaces/{workspace_id}", f"Delete workspace {id}")
         data = response.json()
         return data["workspace"]["id"]
 
@@ -509,9 +486,7 @@ class PostmanApi:
             params["type"] = type
         if created_by:
             params["createdBy"] = created_by
-        response = self.get_request(
-            "workspaces", "Get workspaces", params=params
-        )
+        response = self.get_request("workspaces", "Get workspaces", params=params)
         data = response.json()
         return data["workspaces"]
 
@@ -536,19 +511,12 @@ class PostmanApi:
         if type:
             if isinstance(type, PostmanApi.WorkspaceType):
                 type = type.value
-        data = {
-            "workspace": {
-                "name": name,
-                "description": description,
-                "type": type
-            }
-        }
+        data = {"workspace": {"name": name, "description": description, "type": type}}
         # call API
-        response = self.put_request(
-            f"workspaces/{workspace_id}", f"Update workspace {name}", json=data
-        )
+        response = self.put_request(f"workspaces/{workspace_id}", f"Update workspace {name}", json=data)
         data = response.json()
         return data
+
 
 class PostmanApiError(Exception):
     """Custom exception for Postman API errors."""
@@ -598,7 +566,7 @@ class WorkspaceManager:
 
     @property
     def uid(self) -> str:
-        return self._id + '_' + self.postman_api.api_key
+        return self._id + "_" + self.postman_api.api_key
 
     @property
     def data(self) -> dict[str, Any]:
@@ -699,7 +667,9 @@ class WorkspaceManager:
     #
     # COLLECTIONS
     #
-    def create_collection(self, name, collectionSchemaUrl="https://schema.getpostman.com/json/collection/v2.1.0/collection.json"):
+    def create_collection(
+        self, name, collectionSchemaUrl="https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    ):
         """Helper to create a collection for this workspace."""
         return self.postman_api.create_collection(self.id, name, collectionSchemaUrl)
 
@@ -709,7 +679,7 @@ class WorkspaceManager:
 
     def get_collection_id_by_name(self, collection_name: str):
         """Find a collection ID by name."""
-        if self.collections: # check for empty workspace
+        if self.collections:  # check for empty workspace
             for collection in self.collections:
                 if collection["name"] == collection_name:
                     return collection["id"]
@@ -739,9 +709,7 @@ class WorkspaceManager:
     #
     def get_global_variables(self):
         """Get the workspace global variables"""
-        response = self._api.get_request(
-            f"workspaces/{self._id}/global-variables", "Get workspace variables"
-        )
+        response = self._api.get_request(f"workspaces/{self._id}/global-variables", "Get workspace variables")
         data = response.json()
         return data
 
@@ -760,17 +728,13 @@ class WorkspaceManager:
     #
     def get_workspace(self):
         """Get the workspace information"""
-        response = self._api.get_request(
-            f"workspaces/{self._id}", "Get workspace information"
-        )
+        response = self._api.get_request(f"workspaces/{self._id}", "Get workspace information")
         data = response.json()
         return data
 
     def get_workspace_tags(self):
         """Get the workspace tags (Enterprise only)"""
-        response = self._api.get_request(
-            f"workspaces/{self._id}/tags", "Get workspace tags"
-        )
+        response = self._api.get_request(f"workspaces/{self._id}/tags", "Get workspace tags")
         data = response.json()
         return data
 
@@ -799,9 +763,9 @@ class WorkspaceManager:
         return self.global_variables
 
     def update_workspace(self):
-        data = self._api.update_workspace(
-            self._id, self._data["name"], self._data["description"], self._data["type"])
+        data = self._api.update_workspace(self._id, self._data["name"], self._data["description"], self._data["type"])
         return data
+
 
 class CollectionManager:
     """Helper to interact with an existing Postman collection"""
@@ -899,19 +863,15 @@ class CollectionManager:
 
     def get_collection(self):
         """Fetch collection data from API"""
-        response = self._api.get_request(
-            f"collections/{self._id}", "Get collection information"
-        )
+        response = self._api.get_request(f"collections/{self._id}", "Get collection information")
         data = response.json()
         logging.debug(data)
         return data
-
 
     def refresh_collection_data(self):
         """Refreshes the cached collection data from the API"""
         data = self.get_collection()
         self._data = data["collection"]
-
 
     def replace_collection(self, collection: dict):
         """Proxy for Postman API replace_collection method"""
@@ -1007,8 +967,7 @@ class CollectionManager:
 
 
 class DataProductCollectionManager(CollectionManager):
-    """Helper to interact with a Postman collection specializing in data.
-    """
+    """Helper to interact with a Postman collection specializing in data."""
 
     _dartfx_variable_name: str
     _dartfx_data: dict[str, Any] | None
@@ -1044,7 +1003,7 @@ class DataProductCollectionManager(CollectionManager):
     def get_dartfx_data(self, _refresh=True):
         data = self.get_variable(self._dartfx_variable_name)
         assert data is not None
-        self._dartfx_data = json.loads(data["value"]) # return the variable value as dictionary
+        self._dartfx_data = json.loads(data["value"])  # return the variable value as dictionary
         return self._dartfx_data
 
     def set_dartfx_data(self):
@@ -1103,4 +1062,3 @@ class FolderManager:
 
     def create_folder(self, name: str, description: str | None = None):
         return self._api.create_folder(self._id, name, description, self._id)
-

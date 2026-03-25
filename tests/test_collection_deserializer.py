@@ -8,9 +8,11 @@ def get_data_dir():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     return os.path.join(script_dir, "data")
 
+
 def get_output_dir():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     return os.path.join(script_dir, "output")
+
 
 def test_hello_world():
     filename = "Hello World.postman_collection.json"
@@ -27,6 +29,7 @@ def test_hello_world():
     filepath = os.path.join(get_output_dir(), filename)
     collection.save(filepath)
 
+
 def test_socrata_sfo_wr8u_xric():
     filename = "socrata_sfo_wr8u-xric.json"
     # deserialize
@@ -34,12 +37,12 @@ def test_socrata_sfo_wr8u_xric():
     with open(filepath) as file:
         data = json.load(file)
     collection = pc.Collection.model_validate(data, strict=True)
-    #print(collection)
-    #print(collection.item[0])
+    # print(collection)
+    # print(collection.item[0])
     # check
     assert collection.info.name == "🔢 Fire Incidents [wr8u-xric]"
     assert collection.item[0].name == "Metadata"
-    #assert collection.item[0].item
+    # assert collection.item[0].item
     # serialize
     filepath = os.path.join(get_output_dir(), filename)
     collection.save(filepath)

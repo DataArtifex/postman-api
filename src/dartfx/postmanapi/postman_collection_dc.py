@@ -23,6 +23,7 @@ References:
 - https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html
 
 """
+
 from __future__ import annotations
 
 import inspect
@@ -39,20 +40,22 @@ from typing import Any
 # HELPERS
 #
 class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
 
 class TypeDefinition:
-    """ Represents a dataclass field type definition.
+    """Represents a dataclass field type definition.
     Used by the deserializer when loading from JSON files.
     """
+
     def __init__(self, type_name, children=None, definition=None):
         self.type_name = type_name
         self.children = children if children is not None else []
@@ -67,20 +70,20 @@ class TypeDefinition:
                 self.fieldtypes = {f.name: f.type for f in fields(self.cls)}
 
     def determine_type_category(self):
-        if self.type_name == 'list':
-            return 'list'
-        elif self.type_name == 'dict':
-            return 'dict'
-        elif self.type_name == 'union' or '|' in self.type_name:
-            return 'union'
-        elif self.type_name == 'Any': # this will force to return the value as is
-            return 'primitive'
-        elif self.type_name.lower() in {'int', 'float', 'str', 'bool', 'any', 'none', 'nonetype'}:
-            return 'primitive'
+        if self.type_name == "list":
+            return "list"
+        elif self.type_name == "dict":
+            return "dict"
+        elif self.type_name == "union" or "|" in self.type_name:
+            return "union"
+        elif self.type_name == "Any":  # this will force to return the value as is
+            return "primitive"
+        elif self.type_name.lower() in {"int", "float", "str", "bool", "any", "none", "nonetype"}:
+            return "primitive"
         elif self.type_name.isidentifier() and not self.children:
-            return 'class'
+            return "class"
         else:
-            return 'unknown'
+            return "unknown"
 
     def __repr__(self):
         value = ""
@@ -94,27 +97,29 @@ class TypeDefinition:
                 value += f"\n   {self.fieldtypes}"
         return value
 
+
 def parse_type_definition(definition):
     """Parses a field type definition string into a TypeDefinition object.
     Used by the deserializer.
     """
+
     def split_top_level_union_types(def_str: str) -> list[str]:
         parts = []
         current = []
         depth = 0
         for char in def_str:
-            if char == '[':
+            if char == "[":
                 depth += 1
                 current.append(char)
-            elif char == ']':
+            elif char == "]":
                 depth -= 1
                 current.append(char)
-            elif char == '|' and depth == 0:
-                parts.append(''.join(current).strip())
+            elif char == "|" and depth == 0:
+                parts.append("".join(current).strip())
                 current = []
             else:
                 current.append(char)
-        parts.append(''.join(current).strip())
+        parts.append("".join(current).strip())
         return parts
 
     def parse_inner(def_str):
@@ -122,45 +127,45 @@ def parse_type_definition(definition):
         top_level_union_types = split_top_level_union_types(def_str)
         if len(top_level_union_types) > 1:
             return parse_union(def_str)
-        elif def_str.startswith('list[') and def_str.endswith(']'):
+        elif def_str.startswith("list[") and def_str.endswith("]"):
             return parse_list(def_str)
-        elif def_str.startswith('dict[') and def_str.endswith(']'):
+        elif def_str.startswith("dict[") and def_str.endswith("]"):
             return parse_dict(def_str)
         else:
             return TypeDefinition(def_str.strip(), definition=def_str)
 
     def parse_list(def_str):
-        """ Parse a list type definition string into a TypeDefinition object.
+        """Parse a list type definition string into a TypeDefinition object.
         Examples:
         list['Cookie']
         """
-        if def_str.strip() == 'list':
-            return TypeDefinition('list')
-        match = re.match(r'list\[(.*)\]', def_str.strip())
+        if def_str.strip() == "list":
+            return TypeDefinition("list")
+        match = re.match(r"list\[(.*)\]", def_str.strip())
         if match:
             inner_type = match.group(1)
-            return TypeDefinition('list', [parse_inner(inner_type)], definition=def_str)
+            return TypeDefinition("list", [parse_inner(inner_type)], definition=def_str)
         else:
             raise ValueError(f"Invalid list type definition: {def_str}")
 
     def parse_dict(def_str):
-        """ Parse a dict type definition string into a TypeDefinition object.
+        """Parse a dict type definition string into a TypeDefinition object.
         Examples: No use case at this time
         """
-        match = re.match(r'dict\[(.*)\]', def_str.strip())
+        match = re.match(r"dict\[(.*)\]", def_str.strip())
         if match:
-            key_value_types = match.group(1).split(',')
+            key_value_types = match.group(1).split(",")
             if len(key_value_types) == 2:
                 key_type = key_value_types[0].strip()
                 value_type = key_value_types[1].strip()
-                return TypeDefinition('dict', [parse_inner(key_type), parse_inner(value_type)], definition=def_str)
+                return TypeDefinition("dict", [parse_inner(key_type), parse_inner(value_type)], definition=def_str)
             else:
                 raise ValueError(f"Invalid dict type definition: {def_str}")
         else:
             raise ValueError(f"Invalid dict type definition: {def_str}")
 
     def parse_union(def_str):
-        """ Parse a union type definition string into a TypeDefinition object.
+        """Parse a union type definition string into a TypeDefinition object.
         Examples:
         'Description' | str
         'Version' | str
@@ -171,12 +176,12 @@ def parse_type_definition(definition):
         dict[str,Foo] | Bar
         """
         types = split_top_level_union_types(def_str)
-        return TypeDefinition('union', [parse_inner(t) for t in types])
+        return TypeDefinition("union", [parse_inner(t) for t in types])
 
     # Remove class definition surrouding quotes if exists
     # This happens when using deferred class declaration
-     #like foo: 'Bar' (instead of Foo: Bar)
-    definition = definition.replace("'","")
+    # like foo: 'Bar' (instead of Foo: Bar)
+    definition = definition.replace("'", "")
     # Recursively parse the type definition
     return parse_inner(definition)
 
@@ -209,17 +214,17 @@ def select_type_definition_from_data(union_type_definition, data):
                 # matched
                 logging.debug("primitive matched!")
                 selected_type = type_definition
-                break # we're done
+                break  # we're done
         # dictionary type
         elif isinstance(data, dict):
             # compare keys/fields
-            if type_definition.type_category == 'class':
+            if type_definition.type_category == "class":
                 logging.debug(f"child fields: {type_definition.fieldtypes.keys()}")
                 if data_fields.issubset(type_definition.fieldtypes.keys()):
                     # matched
                     logging.debug("dict matched!")
                     selected_type = type_definition
-                    break # we're done
+                    break  # we're done
         else:
             logging.error(f"Unknown data type {data_type} in select_type_definition_from_data")
     # make the final choice
@@ -234,9 +239,10 @@ def select_type_definition_from_data(union_type_definition, data):
 # DATA CLASSES
 #
 
+
 class CollectionResource:
-    """Base class for all Postman collection resource.
-    """
+    """Base class for all Postman collection resource."""
+
     #
     # SERIALIZER
     #
@@ -244,23 +250,21 @@ class CollectionResource:
         return asdict(self, dict_factory=lambda x: {k: v for (k, v) in x if v is not None})
 
     def toJSON(self, indent=None):
-        return json.dumps(self.asdict(),indent=indent)
+        return json.dumps(self.asdict(), indent=indent)
 
     def save(self, filepath, indent=4, format="json"):
         if format == "json":
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 json.dump(self.asdict(), f, indent=indent)
         else:
             raise ValueError(f"Unsupported format: {format}")
-
 
     #
     # DESERIALIZER
     #
     @classmethod
     def from_dict(cls, data: dict) -> Any:
-        """Deserializes from a dictionary.
-        """
+        """Deserializes from a dictionary."""
 
         # Define an inner function that recursively handles the actual deserialization process
         def from_dict_inner(definition, data):
@@ -343,7 +347,7 @@ class CollectionResource:
 
             # PROCESS DICTIONARY TYPE
             # note: we do not have dict in the current model
-            elif type_definition.type_category== "dict":
+            elif type_definition.type_category == "dict":
                 # TODO
                 logging.debug(f"{bcolors.OKBLUE}-- DICT --{values}{bcolors.ENDC}")
                 key_type, value_type = cls.__args__
@@ -375,9 +379,10 @@ class CollectionResource:
             data = json.load(file)
         return cls.from_dict(data)
 
+
 @dataclass
 class Auth(CollectionResource):
-    type: str | None = None # apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm
+    type: str | None = None  # apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm
     noauth: None = None
     apikey: list[AuthAttribute] | None = None
     awsv4: list[AuthAttribute] | None = None
@@ -390,15 +395,17 @@ class Auth(CollectionResource):
     oauth1: list[AuthAttribute] | None = None
     oauth2: list[AuthAttribute] | None = None
 
+
 @dataclass
 class AuthAttribute(CollectionResource):
     key: str | None = None
     value: str | None = None
     type: str | None = None
 
+
 @dataclass
 class Body(CollectionResource):
-    mode: str | None = None # raw, urlencoded, formdata, file, graphql
+    mode: str | None = None  # raw, urlencoded, formdata, file, graphql
     raw: str | None = None
     graphql: object | None = None
     urlencoded: list[BodyUrlEncoded] | None = None
@@ -407,20 +414,23 @@ class Body(CollectionResource):
     options: object | None = None
     disabled: bool | None = None
 
+
 @dataclass
 class BodyFile(CollectionResource):
     src: str | None = None
     content: str | None = None
 
+
 @dataclass
 class BodyFormData(CollectionResource):
     key: str | None = None
-    value: str | None = None # for type=text
-    src: list[str] | str | None = None # for type=file
+    value: str | None = None  # for type=text
+    src: list[str] | str | None = None  # for type=file
     disabled: bool | None = None
-    type: str | None = None # test | file
+    type: str | None = None  # test | file
     contentType: str | None = None
     description: Description | str | None = None
+
 
 @dataclass
 class BodyUrlEncoded(CollectionResource):
@@ -428,6 +438,7 @@ class BodyUrlEncoded(CollectionResource):
     value: str | None = None
     disabled: bool | None = None
     description: Description | str | None = None
+
 
 @dataclass
 class Certificate(CollectionResource):
@@ -437,9 +448,11 @@ class Certificate(CollectionResource):
     cert: CertificateSrc | None = None
     passphrase: str | None = None
 
+
 @dataclass
 class CertificateSrc(CollectionResource):
     src: str | None = None
+
 
 @dataclass
 class Collection(CollectionResource):
@@ -455,6 +468,7 @@ class Collection(CollectionResource):
         if not self.info:
             self.info = Info()
 
+
 @dataclass
 class Cookie(CollectionResource):
     domain: str | None = None
@@ -469,11 +483,13 @@ class Cookie(CollectionResource):
     value: str | None = None
     extensions: list[Any] | None = None
 
+
 @dataclass
 class Description(CollectionResource):
     content: str | None = None
     type: str | None = None
     version: Version | str | None = None
+
 
 @dataclass
 class Event(CollectionResource):
@@ -482,6 +498,7 @@ class Event(CollectionResource):
     script: Script | None = None
     type: bool | None = None
 
+
 @dataclass
 class Header(CollectionResource):
     key: str | None = None
@@ -489,15 +506,17 @@ class Header(CollectionResource):
     disabled: bool | None = None
     description: Description | str | None = None
 
+
 @dataclass
 class Info(CollectionResource):
     name: str | None = None
     _postman_id: str | None = None
-    _exporter_id: str | None = None # EXPORTED BUT NOT IN JSON SCHEMA
-    _collection_link: str | None = None # EXPORTED BUT NOT IN JSON SCHEMA
+    _exporter_id: str | None = None  # EXPORTED BUT NOT IN JSON SCHEMA
+    _collection_link: str | None = None  # EXPORTED BUT NOT IN JSON SCHEMA
     description: Description | str | None = None
     version: Version | str | None = None
     schema: str = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+
 
 @dataclass
 class Item(CollectionResource):
@@ -514,10 +533,10 @@ class Item(CollectionResource):
         if not self.request:
             self.request = Request()
 
-
     """
     Add an event to this item, initializing the event array if needed.
     """
+
     def add_event(self, event):
         if not self.event:
             self.event = []
@@ -526,7 +545,8 @@ class Item(CollectionResource):
     """
     Helper function to create request
     """
-    def create_request(self, url, method='GET'):
+
+    def create_request(self, url, method="GET"):
         request = Request()
         request.method = method
         request.url = URL()
@@ -536,7 +556,7 @@ class Item(CollectionResource):
         if url_components.port:
             request.url.port = url_components.port
         if len(url_components.path) > 1:
-            request.url.path = url_components.path.split('/')[1:]
+            request.url.path = url_components.path.split("/")[1:]
         if url_components.fragment:
             request.url.hash = url_components.fragment
         self.request = request
@@ -545,17 +565,18 @@ class Item(CollectionResource):
     """
     Helper function to create javascript test event
     """
+
     def create_javascript_test_event(self, script=None):
         event = Event()
         event.script = Script()
-        if(script):
+        if script:
             event.script.exec = script
         self.add_event(event)
         return event
 
 
 @dataclass
-class ItemGroup(CollectionResource): # item-group in JSON schema
+class ItemGroup(CollectionResource):  # item-group in JSON schema
     name: str | None = None
     description: Description | str | None = None
     variable: list[Variable] | None = None
@@ -564,18 +585,22 @@ class ItemGroup(CollectionResource): # item-group in JSON schema
     auth: Auth | None = None
     protocolProfileBehavior: object | None = None
 
+
 @dataclass
-class ProxyConfig(CollectionResource): # proxy-config in JSON schema
+class ProxyConfig(CollectionResource):  # proxy-config in JSON schema
     match: str | None = None
     host: str | None = None
     port: int | None = None
     tunnel: bool = False
     disabled: bool | None = None
 
+
 @dataclass
-class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behavior in JSON schema
+class ProtocolProfileBehavior(CollectionResource):  # proxy-profile-behavior in JSON schema
     # Object with no properties in JSON schema
     pass
+
+
 @dataclass
 class QueryParam(CollectionResource):
     key: str | None = None
@@ -583,13 +608,14 @@ class QueryParam(CollectionResource):
     disabled: bool | None = None
     description: Description | str | None = None
 
+
 @dataclass
 class Request(CollectionResource):
     url: URL | str | None = None
     auth: Auth | None = None
     proxy: ProxyConfig | None = None
     certificate: Certificate | None = None
-    method: str | None = None # GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value
+    method: str | None = None  # GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value
     description: Description | str | None = None
     header: list[Header] | str | None = None
     body: Body | None = None
@@ -599,10 +625,11 @@ class Request(CollectionResource):
             self.header = []
         self.header.append(Header(key=key, value=value, description=description))
 
+
 @dataclass
 class Response(CollectionResource):
     id: str | None = None
-    name: str | None = None # EXPORTED BUT NOT IN JSON SCHEMA
+    name: str | None = None  # EXPORTED BUT NOT IN JSON SCHEMA
     originalRequest: Request | None = None
     responseTime: str | int | None = None
     timings: object | None = None
@@ -622,6 +649,7 @@ class Script(CollectionResource):
     src: URL | str | None = None
     name: str | None = None
 
+
 @dataclass
 class URL(CollectionResource):
     raw: str | None = None
@@ -636,6 +664,7 @@ class URL(CollectionResource):
     """
     Add a query parameter to this URL, initializing the query array if needed.
     """
+
     def add_query_param(self, param):
         if not self.query:
             self.query = []
@@ -644,6 +673,7 @@ class URL(CollectionResource):
     """
     Helper function to create a query parameter
     """
+
     def create_query_parameter(self, key, value=None, description=None, disabled=False):
         param = QueryParam()
         param.key = key
@@ -656,16 +686,18 @@ class URL(CollectionResource):
         self.add_query_param(param)
         return param
 
+
 @dataclass
 class Variable(CollectionResource):
     id: str | None = None
     key: str | None = None
     value: Any | None = None
-    type: str | None = None # string, boolean, any, number
+    type: str | None = None  # string, boolean, any, number
     name: str | None = None
     description: Description | str | None = None
     system: bool | None = None
     disabled: bool | None = None
+
 
 @dataclass
 class Version(CollectionResource):
@@ -674,4 +706,3 @@ class Version(CollectionResource):
     patch: int = 0
     identifier: str | None = None
     meta: Any | None = None
-

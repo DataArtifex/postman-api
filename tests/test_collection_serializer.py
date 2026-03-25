@@ -1,4 +1,3 @@
-
 import os
 
 from dartfx.postmanapi import postman_collection as pc
@@ -12,7 +11,7 @@ def get_output_dir():
 def test_hello_world():
     # Collection
     collection = pc.Collection()
-    collection.info.name="Hello World"
+    collection.info.name = "Hello World"
     # Item
     item = pc.Item(name="Hello World")
     collection.item.append(item)
