@@ -43,7 +43,7 @@ def test_collection_properties(postman_api):
     assert collection.id == collection.info.get('_postman_id')
 
 @pytest.mark.skip(reason="reactivate as needed")
-def test_create_delete_workspace():
+def test_create_delete_workspace(postman_api):
     api = postman_api
     id = api.create_workspace('test_workspace',"personal")
     api.delete_workspace(id)
