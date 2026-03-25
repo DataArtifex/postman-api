@@ -18,9 +18,7 @@ The package provides the following core Python classes:
 
 Additional classes will be implemented to manage requests, folders, and other resources.
 
-This package also includes Python classes to read/write Postman collections based on version 2.1 of the [schema](https://schema.postman.com/). The initial implementation leverages Python data classes. But this is being transitioned into Pydantic-based classes to strengthen features/validation and facilitate integration with other packages and frameworks.
- 
-An optional feature is under development to facilitate [tools calling](https://python.langchain.com/docs/concepts/tool_calling/) from [LangChain](https://www.langchain.com/) / [LangGraph](https://langchain-ai.github.io/langgraph/).
+This package also includes Python classes to read/write Postman collections based on version 2.1 of the [schema](https://schema.postman.com/). The initial implementation leverages Python data classes. But this is being transitioned into Pydantic-based classes to strengthen features and validation.
 
 This package is a component of the [Data Artifex](https://github.com/dataartifex) project. It is being released independently of the Data Artifex [Postman Toolkit]((https://github.com/dataartifex/postman-toolkit)) package to allow its use by any developer working with Postman.
 
@@ -51,13 +49,6 @@ In the meantime, you can install the package locally by following these steps:
    ```bash
    pip install -e .
    ```
-
-   To install the LangChain/LangGraph integration:
-   
-   ```bash
-   pip install -e .[langchain]
-   ```
-
 
 ## Usage
 

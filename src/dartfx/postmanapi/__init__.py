@@ -1,1 +1,1 @@
-from .postman import PostmanApi, PostmanApiError, WorkspaceManager, CollectionManager, FolderManager  # noqa: F401
+from .postman import CollectionManager, FolderManager, PostmanApi, PostmanApiError, WorkspaceManager  # noqa: F401

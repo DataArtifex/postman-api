@@ -18,12 +18,11 @@ Known issues:
 """
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, field_validator
-from typing import Any, Optional, Union
-
 import json
 import urllib
+from typing import Any
 
+from pydantic import BaseModel, Field, field_validator
 
 #
 # DATA CLASSES
@@ -35,12 +34,12 @@ class CollectionResource(BaseModel):
     #
     # SERIALIZER
     #
-    
+
     def to_dict(self) -> dict[str, Any]:
         return self.model_dump(by_alias=True, exclude_none=True)
-    
-    def to_json(self, indent=None) -> str:
-        return self.model_dump_json(by_alias=True, exclude_unset=True, exclude_none=True)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return self.model_dump_json(by_alias=True, exclude_unset=True, exclude_none=True, indent=indent)
 
     def save(self, filepath, indent=4, format="json"):
         if format == "json":
@@ -63,85 +62,85 @@ class CollectionResource(BaseModel):
 
     @classmethod
     def load(cls, file_path: str):
-        with open(file_path, 'r') as file:
+        with open(file_path) as file:
             data = json.load(file)
-        return cls.from_dict(data)        
+        return cls.from_dict(data)
 
 class Auth(CollectionResource):
-    type: str = None # apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm
-    noauth: Optional[None] = None
-    apikey: Optional[list['AuthAttribute']] = None
-    awsv4: Optional[list['AuthAttribute']] = None
-    basic: Optional[list['AuthAttribute']] = None
-    bearer: Optional[list['AuthAttribute']] = None
-    digest: Optional[list['AuthAttribute']] = None
-    edgegrid: Optional[list['AuthAttribute']] = None
-    hawk: Optional[list['AuthAttribute']] = None
-    ntlm: Optional[list['AuthAttribute']] = None
-    oauth1: Optional[list['AuthAttribute']] = None
-    oauth2: Optional[list['AuthAttribute']] = None
+    type: str | None = None # apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm
+    noauth: None = None
+    apikey: list[AuthAttribute] | None = None
+    awsv4: list[AuthAttribute] | None = None
+    basic: list[AuthAttribute] | None = None
+    bearer: list[AuthAttribute] | None = None
+    digest: list[AuthAttribute] | None = None
+    edgegrid: list[AuthAttribute] | None = None
+    hawk: list[AuthAttribute] | None = None
+    ntlm: list[AuthAttribute] | None = None
+    oauth1: list[AuthAttribute] | None = None
+    oauth2: list[AuthAttribute] | None = None
 
 
 class AuthAttribute(CollectionResource):
-    type: str = None
-    key: Optional[str] = None
-    value: Optional[str] = None
+    type: str | None = None
+    key: str | None = None
+    value: str | None = None
 
 
 class Body(CollectionResource):
-    mode: Optional[str] = None # raw, urlencoded, formdata, file, graphql
-    raw: Optional[str] = None
-    graphql: Optional[object] = None
-    urlencoded: Optional[list[BodyUrlEncoded]] = None
-    formdata: Optional[list[BodyFormData]] = None
-    file: Optional[BodyFile]= None
-    options: Optional[object] = None
-    disabled: Optional[bool] = None
+    mode: str | None = None # raw, urlencoded, formdata, file, graphql
+    raw: str | None = None
+    graphql: object | None = None
+    urlencoded: list[BodyUrlEncoded] | None = None
+    formdata: list[BodyFormData] | None = None
+    file: BodyFile | None = None
+    options: object | None = None
+    disabled: bool | None = None
 
 
 class BodyFile(CollectionResource):
-    src: Optional[str] = None
-    content: Optional[str] = None
+    src: str | None = None
+    content: str | None = None
 
 class BodyFormData(CollectionResource):
-    key: str = None
-    value: Optional[str] = None # for type=text
-    src: Optional[Union[list[str],str]] = None # for type=file
-    disabled: Optional[bool] = None
-    type: Optional[str] = None # test | file
-    contentType: Optional[str] = None
-    description : Optional[Union['Description',str]] = None
+    key: str | None = None
+    value: str | None = None # for type=text
+    src: list[str] | str | None = None # for type=file
+    disabled: bool | None = None
+    type: str | None = None # test | file
+    contentType: str | None = None
+    description: Description | str | None = None
 
 class BodyUrlEncoded(CollectionResource):
-    key: str = None
-    value: Optional[str] = None
-    disabled: Optional[bool] = None
-    description: Optional[Union['Description',str]] = None
+    key: str | None = None
+    value: str | None = None
+    disabled: bool | None = None
+    description: Description | str | None = None
 
 
 class Certificate(CollectionResource):
-    name: Optional[str] = None
-    matches: Optional[list[str]] = None
-    key: Optional['CertificateSrc'] = None
-    cert: Optional['CertificateSrc'] = None
-    passphrase: Optional[str] = None
+    name: str | None = None
+    matches: list[str] | None = None
+    key: CertificateSrc | None = None
+    cert: CertificateSrc | None = None
+    passphrase: str | None = None
 
 
 class CertificateSrc(CollectionResource):
-    src: str = None    
+    src: str | None = None
 
 class Collection(CollectionResource):
-    info: 'Info' = None
-    item: list[Union['Item','ItemGroup']] = Field(default_factory=list)
-    event: Optional[list['Event']] = None
-    variable: Optional[list['Variable']] = None
-    auth: Optional['Auth'] = None
-    protocolProfileBehavior: Optional[object] = None
-    postman_id: Optional[str] = Field(alias="_postman_id", default=None)
+    info: Info | None = None
+    item: list[Item | ItemGroup] = Field(default_factory=list)
+    event: list[Event] | None = None
+    variable: list[Variable] | None = None
+    auth: Auth | None = None
+    protocolProfileBehavior: object | None = None
+    postman_id: str | None = Field(alias="_postman_id", default=None)
 
     def model_post_init(self, __context):
         if not self.info:
-            self.info = Info()        
+            self.info = Info()
 
     @field_validator("item", mode="before")
     @classmethod
@@ -163,55 +162,55 @@ class Collection(CollectionResource):
         return parsed_items
 
 class Cookie(CollectionResource):
-    domain: str = None
-    path: str = None
-    expires: Optional[str] = None
-    maxAge: Optional[str] = None
-    hostOnly: Optional[bool] = False
-    httpOnly: Optional[bool] = False
-    name: Optional[str] = None
-    secure: Optional[bool] = False
-    session: Optional[bool] = False
-    value: Optional[str] = None
-    extensions: Optional[list[Any]] = None
+    domain: str | None = None
+    path: str | None = None
+    expires: str | None = None
+    maxAge: str | None = None
+    hostOnly: bool | None = False
+    httpOnly: bool | None = False
+    name: str | None = None
+    secure: bool | None = False
+    session: bool | None = False
+    value: str | None = None
+    extensions: list[Any] | None = None
 
 class Description(CollectionResource):
-    content: str = None
-    type: str = None 
-    version: Union['Version',str] = None
+    content: str | None = None
+    type: str | None = None
+    version: Version | str | None = None
 
 class Event(CollectionResource):
-    listen: str = None
-    id: Optional[str] = None
-    script: Optional['Script'] = None
-    type: Optional[bool] = None
+    listen: str | None = None
+    id: str | None = None
+    script: Script | None = None
+    type: bool | None = None
 
 
 class Header(CollectionResource):
-    key: str = None
-    value: str = None
-    disabled: Optional[bool] = None
-    description: Optional[Union['Description',str]] = None
+    key: str | None = None
+    value: str | None = None
+    disabled: bool | None = None
+    description: Description | str | None = None
 
 class Info(CollectionResource):
     # schema_field is aliased to schema to prevent naming conflict with Pydantic BaseModel
-    name: str = None
+    name: str | None = None
     schema_: str = Field(alias='schema', default="https://schema.getpostman.com/json/collection/v2.1.0/collection.json")
-    postman_id: Optional[str] = Field(alias='_postman_id', default=None)
-    exporter_id: Optional[str] = Field(alias='_exporter_id', default=None) # EXPORTED BUT NOT IN JSON SCHEMA
-    collection_link: Optional[str] = Field(alias='_collection_link', default=None) # EXPORTED BUT NOT IN JSON SCHEMA
-    description: Optional[Union['Description',str]] = None
-    version: Optional[Union['Version',str]] = None
-        
+    postman_id: str | None = Field(alias='_postman_id', default=None)
+    exporter_id: str | None = Field(alias='_exporter_id', default=None) # EXPORTED BUT NOT IN JSON SCHEMA
+    collection_link: str | None = Field(alias='_collection_link', default=None) # EXPORTED BUT NOT IN JSON SCHEMA
+    description: Description | str | None = None
+    version: Version | str | None = None
+
 class Item(CollectionResource):
-    request: 'Request' = None
-    id: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[Union['Description',str]] = None
-    variable: Optional[list['Variable']] = None
-    event: Optional[list['Event']] = None
-    response: Optional[list['Response']] = None
-    protocolProfileBehavior: Optional[object] = None
+    request: Request | None = None
+    id: str | None = None
+    name: str | None = None
+    description: Description | str | None = None
+    variable: list[Variable] | None = None
+    event: list[Event] | None = None
+    response: list[Response] | None = None
+    protocolProfileBehavior: object | None = None
 
     def model_post_init(self, __context):
         if not self.request:
@@ -245,7 +244,7 @@ class Item(CollectionResource):
         self.request = request
         return self.request
 
-    def add_test_script(self, script:str=None):
+    def add_test_script(self, script: str | None = None):
         """Add a 'test' event script to the item."""
         event = Event()
         event.listen = "test"
@@ -261,14 +260,14 @@ class Item(CollectionResource):
 
 
 class ItemGroup(CollectionResource): # item-group in JSON schema
-    item: list[Union[Item,ItemGroup]] = Field(default_factory=list)
-    name: Optional[str] = None
-    description: Optional[Union['Description',str]] = None
-    variable: Optional[list['Variable']] = None
-    event: Optional[list['Event']] = None
-    auth: Optional['Auth'] = None
-    protocolProfileBehavior: Optional[object] = None    
-    
+    item: list[Item | ItemGroup] = Field(default_factory=list)
+    name: str | None = None
+    description: Description | str | None = None
+    variable: list[Variable] | None = None
+    event: list[Event] | None = None
+    auth: Auth | None = None
+    protocolProfileBehavior: object | None = None
+
     @field_validator("item", mode="before")
     @classmethod
     def determine_item_type(cls, value):
@@ -289,31 +288,31 @@ class ItemGroup(CollectionResource): # item-group in JSON schema
         return parsed_items
 
 class ProxyConfig(CollectionResource): # proxy-config in JSON schema
-    match: Optional[str] = None
-    host: Optional[str] = None
-    port: Optional[int] = None
-    tunnel: Optional[bool] = False
-    disabled: Optional[bool] = None
+    match: str | None = None
+    host: str | None = None
+    port: int | None = None
+    tunnel: bool | None = False
+    disabled: bool | None = None
 
 class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behavior in JSON schema
     # Object with no properties in JSON schema
     pass
 
 class QueryParam(CollectionResource):
-    key: str = None
-    value: str = None
-    disabled: bool = None
-    description: Union['Description',str] = None
+    key: str | None = None
+    value: str | None = None
+    disabled: bool | None = None
+    description: Description | str | None = None
 
 class Request(CollectionResource):
-    url: Optional[Union['URL',str]] = None
-    auth: Optional['Auth'] = None
-    proxy: Optional['ProxyConfig'] = None
-    certificate: Optional['Certificate'] = None
-    method: Optional[str] = None # GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value
-    description: Optional[Union['Description',str]] = None
-    header: Optional[Union[list['Header'],str]] = None
-    body: Optional['Body'] = None
+    url: URL | str | None = None
+    auth: Auth | None = None
+    proxy: ProxyConfig | None = None
+    certificate: Certificate | None = None
+    method: str | None = None # GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value
+    description: Description | str | None = None
+    header: list[Header] | str | None = None
+    body: Body | None = None
 
     def add_header(self, key, value, description=None):
         if not isinstance(self.header, list):
@@ -321,35 +320,35 @@ class Request(CollectionResource):
         self.header.append(Header(key=key, value=value, description=description))
 
 class Response(CollectionResource):
-    id: Optional[str] = None
-    name: Optional[str] = None # EXPORTED BUT NOT IN JSON SCHEMA
-    originalRequest: Optional['Request'] = None
-    reponseTime: Optional[Union[str,int]] = None
-    timings: Optional[object] = None
-    header: Optional[Union[list['Header'],str]] = None
-    cookie: Optional[list['Cookie']] = None
-    body: Optional[str] = None
-    status: Optional[str] = None
-    code: Optional[int] = None
-    _postman_previewlanguage: Optional[str] = None
+    id: str | None = None
+    name: str | None = None # EXPORTED BUT NOT IN JSON SCHEMA
+    originalRequest: Request | None = None
+    reponseTime: str | int | None = None
+    timings: object | None = None
+    header: list[Header] | str | None = None
+    cookie: list[Cookie] | None = None
+    body: str | None = None
+    status: str | None = None
+    code: int | None = None
+    _postman_previewlanguage: str | None = None
 
 
 class Script(CollectionResource):
-    id : Optional[str] = None
-    type: Optional[str] = None
-    exec: Optional[Union[list[str],str]] = None
-    src: Optional[Union[URL,str]] = None
-    name: Optional[str] = None
+    id : str | None = None
+    type: str | None = None
+    exec: list[str] | str | None = None
+    src: URL | str | None = None
+    name: str | None = None
 
 class URL(CollectionResource):
-    raw: Optional[str] = None
-    protocol: Optional[str] = None
-    host: Optional[Union[str,list[str]]] = None
-    path: Optional[Union[str,list[str]]] = None
-    port: Optional[str] = None
-    query: Optional[list['QueryParam']] = None
-    hash: Optional[str] = None
-    variable: Optional[list['Variable']] = None
+    raw: str | None = None
+    protocol: str | None = None
+    host: str | list[str] | None = None
+    path: str | list[str] | None = None
+    port: str | None = None
+    query: list[QueryParam] | None = None
+    hash: str | None = None
+    variable: list[Variable] | None = None
 
     """
     Add a query parameter to this URL, initializing the query array if needed.
@@ -396,19 +395,19 @@ class URL(CollectionResource):
         return variable
 
 class Variable(CollectionResource):
-    id: Optional[str] = None
-    key: Optional[str] = None
-    value: Optional[Any] = None
-    type: Optional[str] = None # string, boolean, any, number
-    name: Optional[str] = None
-    description: Optional[Union['Description',str]] = None
-    system: Optional[bool] = None
-    disabled: Optional[bool] = None
+    id: str | None = None
+    key: str | None = None
+    value: Any | None = None
+    type: str | None = None # string, boolean, any, number
+    name: str | None = None
+    description: Description | str | None = None
+    system: bool | None = None
+    disabled: bool | None = None
 
 class Version(CollectionResource):
     major: int = 0
     minor: int = 0
     patch: int = 0
-    identifier: Optional[str] = None
-    meta: Optional[Any] = None
+    identifier: str | None = None
+    meta: Any | None = None
 

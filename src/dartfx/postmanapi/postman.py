@@ -1,11 +1,13 @@
 """
 Classes and helpers to interact with the Postman API, workspaces, collections, folders, and related resources.
 """
-from datetime import datetime
-from enum import Enum
 import json
 import logging
 import uuid
+from datetime import datetime
+from enum import Enum
+from typing import Any
+
 import requests
 
 
@@ -57,31 +59,31 @@ class PostmanApi:
     def delete_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the DEL method."""
         return self.request(
-            "delete", endpoint, description, headers=headers, success=200, **kwargs
+            "delete", endpoint, description, headers=headers, success=success, **kwargs
         )
 
     def get_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the GET method."""
         return self.request(
-            "get", endpoint, description, headers=headers, success=200, **kwargs
+            "get", endpoint, description, headers=headers, success=success, **kwargs
         )
 
     def post_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the POST method."""
         return self.request(
-            "post", endpoint, description, headers=headers, success=200, **kwargs
+            "post", endpoint, description, headers=headers, success=success, **kwargs
         )
 
     def patch_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the PATCH method."""
         return self.request(
-            "patch", endpoint, description, headers=headers, success=200, **kwargs
+            "patch", endpoint, description, headers=headers, success=success, **kwargs
         )
 
     def put_request(self, endpoint, description, headers=None, success=200, **kwargs):
         """Call the Postman API using the PUT method."""
         return self.request(
-            "put", endpoint, description, headers=headers, success=200, **kwargs
+            "put", endpoint, description, headers=headers, success=success, **kwargs
         )
 
     #
@@ -101,8 +103,10 @@ class PostmanApi:
         Args:
             workspace_id (str): The ID of the workspace
             name (str): The name of the collection
-            collectionSchemaUrl (str, optional): The URL of the collection schema. Defaults to "https://schema.getpostman.com/json/collection/v2.1.0/collection.json".
-            variables (dict, optional): The variables of the collection. Defaults to None. Must be a valid Postman variable object.
+            collectionSchemaUrl (str, optional): The URL of the collection schema.
+                Defaults to "https://schema.getpostman.com/json/collection/v2.1.0/collection.json".
+            variables (dict, optional): The variables of the collection.
+                Defaults to None. Must be a valid Postman variable object.
 
         Raises:
             PostmanApiError: If the API returns an error
@@ -225,9 +229,9 @@ class PostmanApi:
         self,
         collection_id,
         name: str = "New Folder",
-        description: str = None,
-        parent_id: str = None,
-        data=None,
+        description: str | None = None,
+        parent_id: str | None = None,
+        data: dict[str, Any] | None = None,
     ) -> str:
         """Create a folder in a collection
 
@@ -330,10 +334,10 @@ class PostmanApi:
     def get_elements_by_tag(
         self,
         slug: str,
-        entity_type: EntityType = None,
-        limit: int = None,
-        direction=None,
-        cursor: str = None,
+        entity_type: EntityType | str | None = None,
+        limit: int | None = None,
+        direction: str | None = None,
+        cursor: str | None = None,
     ) -> dict:
         """Get elements by tag.
         Only available under Postman Enterprise plan.
@@ -350,8 +354,10 @@ class PostmanApi:
         Returns:
             dict: The elements
         """
-        params = {}
+        params: dict[str, object] = {}
         if entity_type:
+            if isinstance(entity_type, PostmanApi.EntityType):
+                entity_type = entity_type.value
             params["entity_type"] = entity_type
         if limit:
             params["limit"] = limit
@@ -374,8 +380,8 @@ class PostmanApi:
         target_uid: str,
         target_model: str = "collection",
         location_position: str = "start",
-        location_model=None,
-        location_uid: str = None,
+        location_model: str | None = None,
+        location_uid: str | None = None,
         mode: str = "move",
     ) -> dict:
         """Transfer a collection or folder to another collection or folder
@@ -383,10 +389,14 @@ class PostmanApi:
         Args:
             uids (list): The folder UIDs to transfer.
             target_uid (str): the UID of the destination collection or folder.
-            target_model (str, optional): The type of item where the items will be transferred to (collection or folder). Defaults to 'collection'.
-            location_position (str, optional): The item's position within the destination (start, end, before, after). Defaults to 'start'.
-            location_model (str, optional):  For the before or after positions, a string value that contains the type of item (model) that the transferred item will be positioned by. Defaults to None.
-            location_uid (str, optional): For the before or after positions, a string value that contains the model's UID. Defaults to None.
+            target_model (str, optional): The destination item type,
+                either collection or folder. Defaults to collection.
+            location_position (str, optional): The position within the destination,
+                one of start, end, before, or after. Defaults to start.
+            location_model (str, optional): For before or after positions,
+                the item type used as the placement anchor. Defaults to None.
+            location_uid (str, optional): For before or after positions,
+                the anchor model UID. Defaults to None.
             mode (str, optional): The transfer mode (move or copy). Defaults to 'move'.
 
         Raises:
@@ -436,7 +446,7 @@ class PostmanApi:
     # WORKSPACES
     #
     def create_workspace(
-        self, name: str, type: WorkspaceType|str, description: str = None
+        self, name: str, type: WorkspaceType | str, description: str | None = None
     ) -> str:
         """Create a new Postman workspace.
 
@@ -484,7 +494,7 @@ class PostmanApi:
         data = response.json()
         return data["workspace"]["id"]
 
-    def get_workspaces(self, type: str = None, created_by: str = None) -> list[dict]:
+    def get_workspaces(self, type: str | None = None, created_by: str | None = None) -> list[dict]:
         """Retrieves workspaces from the Postman API associated with the user / API key.
 
         Args:
@@ -494,30 +504,36 @@ class PostmanApi:
         Returns:
             list[dict]: A list of workspaces (id and name)
         """
-        params = {}
+        params: dict[str, str] = {}
         if type:
             params["type"] = type
-        if created_by:  
+        if created_by:
             params["createdBy"] = created_by
         response = self.get_request(
             "workspaces", "Get workspaces", params=params
         )
         data = response.json()
-        return data["workspaces"]       
-        
-    def update_workspace(self, workspace_id:str, name: str, description: str, type: WorkspaceType|str) -> dict:
-        """ Update a Postman workspace
+        return data["workspaces"]
+
+    def update_workspace(
+        self,
+        workspace_id: str,
+        name: str,
+        description: str | None,
+        type: WorkspaceType | str,
+    ) -> dict:
+        """Update a Postman workspace.
 
         Args:
             workspace_id (str): The ID of the workspace
-            name (str, optional): The name of the workspace. Defaults to None.  
+            name (str, optional): The name of the workspace. Defaults to None.
             description (str, optional): The description of the workspace. Defaults to None.
-            type (WorkspaceType|str, optional): The type of the workspace. Defaults to None.
+            type (WorkspaceType | str, optional): The type of the workspace. Defaults to None.
 
         Returns:
             dict: The updated workspace data
         """
-        if type: 
+        if type:
             if isinstance(type, PostmanApi.WorkspaceType):
                 type = type.value
         data = {
@@ -559,12 +575,10 @@ class WorkspaceManager:
     TYPES = ["personal", "private", "public", "team", "partner"]
     _id: str  # workspace id
     _api: PostmanApi  # API object
-    _data: dict  # the workspace Postman JSON object
-    _tags: list[str]  # the workspace tags as an array
-    _global_variables: list[
-        object
-    ]  # the workspace global variables as an array of JSON objects
-    _updated_at: datetime  # local update timestamp
+    _data: dict[str, Any] | None  # the workspace Postman JSON object
+    _tags: list[str] | None  # the workspace tags as an array
+    _global_variables: list[object] | None  # the workspace global variables as an array of JSON objects
+    _updated_at: datetime | None  # local update timestamp
 
     def __init__(self, api: PostmanApi, id: str):
         self._api = api
@@ -587,64 +601,73 @@ class WorkspaceManager:
         return self._id + '_' + self.postman_api.api_key
 
     @property
-    def data(self) -> dict:
+    def data(self) -> dict[str, Any]:
         if self._data is None:
             self.refresh_workspace()
+        assert self._data is not None
         return self._data
 
     @property
-    def name(self) -> str:
+    def name(self) -> str | None:
         return self.data.get("name")
 
     @name.setter
     def name(self, value: str):
+        assert self._data is not None
         self._data["name"] = value
         self._updated_at = datetime.now()
 
     @property
-    def type(self) -> str:
+    def type(self) -> str | None:
         return self.data.get("type")
 
     @type.setter
     def type(self, value: str):
+        assert self._data is not None
         self._data["type"] = value
         self._updated_at = datetime.now()
 
     @property
-    def description(self) -> str:
+    def description(self) -> str | None:
         return self.data.get("description")
 
     @description.setter
     def description(self, value: str):
+        assert self._data is not None
         self._data["description"] = value
         self._updated_at = datetime.now()
 
     @property
-    def visibility(self) -> str:
+    def visibility(self) -> str | None:
         return self.data.get("visibility")
 
     @visibility.setter
     def visibility(self, value: bool):
+        assert self._data is not None
         self._data["visibility"] = bool(value)
         self._updated_at = datetime.now()
 
     @property
-    def created_by(self) -> str:
+    def created_by(self) -> str | None:
         return self.data.get("createdBy")
 
     @property
-    def updated_by(self) -> str:
+    def updated_by(self) -> str | None:
         return self.data.get("updatedBy")
 
     @property
-    def created_at(self) -> datetime:
+    def created_at(self) -> datetime | None:
         value = self.data.get("createdAt")
+        if not isinstance(value, str):
+            return None
         value = value.replace(".000Z", "+00:00")  # for Python < 3.11
         return datetime.fromisoformat(value)
 
     @property
-    def updated_at(self) -> datetime:
+    def updated_at(self) -> datetime | None:
         value = self.data.get("updatedAt")
+        if not isinstance(value, str):
+            return None
         value = value.replace(".000Z", "+00:00")  # for Python < 3.11
         return datetime.fromisoformat(value)
 
@@ -682,7 +705,7 @@ class WorkspaceManager:
 
     def delete_collection(self, collection_id: str):
         """Helper to delete a collection from this workspace."""
-        return self.postman_api.delete_collection(self.id, collection_id)
+        return self.postman_api.delete_collection(collection_id)
 
     def get_collection_id_by_name(self, collection_name: str):
         """Find a collection ID by name."""
@@ -690,15 +713,19 @@ class WorkspaceManager:
             for collection in self.collections:
                 if collection["name"] == collection_name:
                     return collection["id"]
-    
+
     def replace_collection(self, collection_id: str, collection: dict):
         """Helper to replace a collection in this workspace."""
-        return self.postman_api.replace_collection(self.id, collection_id, collection)
-    
+        return self.postman_api.replace_collection(collection_id, collection)
+
     def import_collection(self, collection: dict, replace: bool = False):
         """Import a Postman collection in this workspace"""
-        collection_info = collection.get("info")    
+        collection_info = collection.get("info")
+        if not isinstance(collection_info, dict):
+            raise ValueError("Collection is missing its info block")
         collection_name = collection_info.get("name")
+        if not isinstance(collection_name, str):
+            raise ValueError("Collection info is missing its name")
         collection_id = self.get_collection_id_by_name(collection_name)
         if collection_id and replace:
             self.postman_api.replace_collection(collection_id, collection)
@@ -718,12 +745,12 @@ class WorkspaceManager:
         data = response.json()
         return data
 
-    def set_global_variable(self, name: str, value: str):
+    def set_global_variable(self, _name: str, _value: str):
         # TODO
         logging.warning("set_global_variable not implemented.")
         return
 
-    def unset_global_variable(self, name: str, value: str):
+    def unset_global_variable(self, _name: str, _value: str):
         # TODO
         logging.warning("unset_global_variable not implemented.")
         return
@@ -781,9 +808,9 @@ class CollectionManager:
 
     _id: str  # Postman collection id
     _api: PostmanApi  # API object
-    _data: dict  # the underlying Postman JSON object
-    _updated_at: datetime  # local update timestamp
-    _tags: list[str]  # the collection tags as an array (enterprise only)
+    _data: dict[str, Any] | None  # the underlying Postman JSON object
+    _updated_at: datetime | None  # local update timestamp
+    _tags: list[str] | None  # the collection tags as an array (enterprise only)
 
     def __init__(self, api: PostmanApi, collection_id: str, refresh=True):
         self._id = collection_id
@@ -797,10 +824,11 @@ class CollectionManager:
     def data(self) -> dict:
         if self._data is None:
             self.refresh_collection_data()
+        assert self._data is not None
         return self._data
 
     @property
-    def description(self):
+    def description(self) -> str | None:
         return self.data["info"].get("description")
 
     @description.setter
@@ -816,11 +844,11 @@ class CollectionManager:
         return response
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self._id
 
     @property
-    def info(self):
+    def info(self) -> dict[str, Any] | None:
         return self.data.get("info")
 
     def patch_info(self):
@@ -834,8 +862,11 @@ class CollectionManager:
         return response
 
     @property
-    def name(self):
-        return self.data.get("info").get("name")
+    def name(self) -> str | None:
+        info = self.data.get("info")
+        if not isinstance(info, dict):
+            return None
+        return info.get("name")
 
     @name.setter
     def name(self, value: str):
@@ -850,14 +881,21 @@ class CollectionManager:
         return response
 
     @property
-    def uid(self):
-        return self.info.get("uid")
+    def uid(self) -> str | None:
+        info = self.info
+        if not isinstance(info, dict):
+            return None
+        return info.get("uid")
 
     @property
-    def variables(self):
+    def variables(self) -> list[dict[str, Any]]:
         if "variable" not in self.data:
             self.data["variable"] = []
-        return self.data.get("variable")
+        variables = self.data.get("variable")
+        if not isinstance(variables, list):
+            self.data["variable"] = []
+            variables = self.data["variable"]
+        return variables
 
     def get_collection(self):
         """Fetch collection data from API"""
@@ -873,8 +911,8 @@ class CollectionManager:
         """Refreshes the cached collection data from the API"""
         data = self.get_collection()
         self._data = data["collection"]
-        
-    
+
+
     def replace_collection(self, collection: dict):
         """Proxy for Postman API replace_collection method"""
         return self._api.replace_collection(self._id, collection)
@@ -889,7 +927,7 @@ class CollectionManager:
     def update_folder(self, id: str, data: dict):
         return self._api.update_folder(self._id, id, data)
 
-    def create_folder(self, name: str, description: str = None, parent_id: str = None):
+    def create_folder(self, name: str, description: str | None = None, parent_id: str | None = None):
         return self._api.create_folder(self._id, name, description, parent_id)
 
     # VARIABLES
@@ -969,11 +1007,11 @@ class CollectionManager:
 
 
 class DataProductCollectionManager(CollectionManager):
-    """Helper to interact with a Postman collection specializing in data.    
+    """Helper to interact with a Postman collection specializing in data.
     """
 
     _dartfx_variable_name: str
-    _dartfx_data: dict
+    _dartfx_data: dict[str, Any] | None
 
     @classmethod
     def factory(
@@ -981,7 +1019,7 @@ class DataProductCollectionManager(CollectionManager):
         api: PostmanApi,
         workspace_id: str,
         name: str,
-        dartfx_id: str = None,
+        dartfx_id: str | None = None,
         dartfx_variable_name: str = "_dartfx",
     ):
         """Create a new data product collection"""
@@ -1003,8 +1041,9 @@ class DataProductCollectionManager(CollectionManager):
         self._dartfx_variable_name = dartfx_variable
 
     # DartFX data storage
-    def get_dartfx_data(self, refresh=True):
+    def get_dartfx_data(self, _refresh=True):
         data = self.get_variable(self._dartfx_variable_name)
+        assert data is not None
         self._dartfx_data = json.loads(data["value"]) # return the variable value as dictionary
         return self._dartfx_data
 
@@ -1012,8 +1051,9 @@ class DataProductCollectionManager(CollectionManager):
         return self.set_variable(self._dartfx_variable_name, self._dartfx_data)
 
     # DartFX variable
-    def get_dartfx_variable(self, key: str, refresh=True):
-        return self.get_dartfx_data().get(key)
+    def get_dartfx_variable(self, key: str, _refresh=True):
+        dartfx_data = self.get_dartfx_data()
+        return dartfx_data.get(key)
 
     def set_dartfx_variable(self, key: str, value):
         if value:
@@ -1028,17 +1068,17 @@ class DataProductCollectionManager(CollectionManager):
 
     def get_registered_folder(self, id: str):
         pass
-    
-    
+
+
 class FolderManager:
     """Helper to interact with an existing Postman folder"""
 
     _id: str  # Postman folder id
     _collection_id: str  # Postman collection id
     _api: PostmanApi  # API object
-    _data: dict  # the underlying Postman JSON object
-    _updated_at: datetime  # local update timestamp
-    _tags: list[str]  # the collection tags as an array (enterprise only)
+    _data: dict[str, Any] | None  # the underlying Postman JSON object
+    _updated_at: datetime | None  # local update timestamp
+    _tags: list[str] | None  # the collection tags as an array (enterprise only)
 
     def __init__(self, api: PostmanApi, collection_id: str, folder_id, refresh=True):
         self.collection_id = collection_id
@@ -1053,6 +1093,7 @@ class FolderManager:
     def data(self) -> dict:
         if self._data is None:
             self.refresh_data()
+        assert self._data is not None
         return self._data
 
     def refresh_data(self):
@@ -1060,6 +1101,6 @@ class FolderManager:
         data = self.get_collection()
         self._data = data["collection"]
 
-    def create_folder(self, name: str, description: str = None, ):
-        return self._api.create_folder(self._id, name, description, self.id)
+    def create_folder(self, name: str, description: str | None = None):
+        return self._api.create_folder(self._id, name, description, self._id)
 

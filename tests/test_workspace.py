@@ -1,30 +1,24 @@
-from dartfx.postmanapi import postman
-
 from datetime import datetime
-import dotenv as env
-from functools import cache
-import os
+
 import pytest
 
-env.load_dotenv()
+from dartfx.postmanapi import postman
 
-def get_api() -> postman.PostmanApi:
-    api = postman.PostmanApi(os.environ.get('POSTMAN_API_KEY'))
-    return api
+WORKSPACE_ID = "194dd33d-438d-47e1-ae69-e2ab5b414beb"
 
-@cache
-def get_workspace(id="194dd33d-438d-47e1-ae69-e2ab5b414beb") -> postman.WorkspaceManager:
-    ws = postman.WorkspaceManager(get_api(), id)
+def get_workspace(api: postman.PostmanApi, workspace_id: str = WORKSPACE_ID) -> postman.WorkspaceManager:
+    ws = postman.WorkspaceManager(api, workspace_id)
     return ws
-@cache
-def get_collection(index=0) -> postman.CollectionManager:
-    ws = get_workspace()
+
+
+def get_collection(api: postman.PostmanApi, index: int = 0) -> postman.CollectionManager:
+    ws = get_workspace(api)
     collection_stub = ws.collections[index]
-    collection = postman.CollectionManager(get_api(), collection_stub['id'])
+    collection = postman.CollectionManager(api, collection_stub['id'])
     return collection
 
-def test_workspace_properties():
-    ws = get_workspace()
+def test_workspace_properties(postman_api):
+    ws = get_workspace(postman_api)
     assert ws.id is not None
     assert ws.name is not None
     assert ws.type is not None
@@ -35,22 +29,22 @@ def test_workspace_properties():
     assert isinstance(ws.created_at, datetime)
     assert ws.updated_at is not None
 
-def test_workspace_tags():
-    ws = get_workspace()
+def test_workspace_tags(postman_api):
+    ws = get_workspace(postman_api)
     assert isinstance(ws.tags, list)
 
-def test_workspace_global_variables():
-    ws = get_workspace()
+def test_workspace_global_variables(postman_api):
+    ws = get_workspace(postman_api)
     assert isinstance(ws.global_variables, list)
 
-def test_collection_properties():
-    collection = get_collection()
+def test_collection_properties(postman_api):
+    collection = get_collection(postman_api)
     assert collection.info is not None
     assert collection.id == collection.info.get('_postman_id')
 
 @pytest.mark.skip(reason="reactivate as needed")
 def test_create_delete_workspace():
-    api = get_api()
+    api = postman_api
     id = api.create_workspace('test_workspace',"personal")
     api.delete_workspace(id)
 

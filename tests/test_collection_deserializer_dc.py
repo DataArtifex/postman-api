@@ -1,5 +1,7 @@
-from dartfx.postmanapi import postman_collection_dc as pc
 import os
+
+from dartfx.postmanapi import postman_collection_dc as pc
+
 
 def get_data_dir():
     script_dir = os.path.dirname(os.path.realpath(__file__))

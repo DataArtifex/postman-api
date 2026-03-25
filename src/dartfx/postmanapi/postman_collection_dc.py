@@ -24,14 +24,16 @@ References:
 
 """
 from __future__ import annotations
-from dataclasses import dataclass, field, asdict, fields
+
 import inspect
 import json
 import logging
 import re
 import sys
-from typing import Any
 import urllib
+from dataclasses import asdict, dataclass, field, fields
+from typing import Any
+
 
 #
 # HELPERS
@@ -49,20 +51,20 @@ class bcolors:
 
 class TypeDefinition:
     """ Represents a dataclass field type definition.
-    Used by the deserializer when loading from JSON files. 
+    Used by the deserializer when loading from JSON files.
     """
     def __init__(self, type_name, children=None, definition=None):
         self.type_name = type_name
         self.children = children if children is not None else []
         self.definition = definition
         self.type_category = self.determine_type_category()
-        if self.type_category == "class": 
+        if self.type_category == "class":
             # get the class itself (needed by deserializer)
             # we assume at this point all classes belong to this module
             self.cls = getattr(sys.modules[__name__], self.type_name)
             # collect the dataclass fields
             if self.cls:
-                self.fieldtypes = {f.name: f.type for f in fields(self.cls)}            
+                self.fieldtypes = {f.name: f.type for f in fields(self.cls)}
 
     def determine_type_category(self):
         if self.type_name == 'list':
@@ -73,7 +75,7 @@ class TypeDefinition:
             return 'union'
         elif self.type_name == 'Any': # this will force to return the value as is
             return 'primitive'
-        elif self.type_name.lower() in {'int', 'float', 'str', 'bool', 'any'}:
+        elif self.type_name.lower() in {'int', 'float', 'str', 'bool', 'any', 'none', 'nonetype'}:
             return 'primitive'
         elif self.type_name.isidentifier() and not self.children:
             return 'class'
@@ -96,20 +98,41 @@ def parse_type_definition(definition):
     """Parses a field type definition string into a TypeDefinition object.
     Used by the deserializer.
     """
+    def split_top_level_union_types(def_str: str) -> list[str]:
+        parts = []
+        current = []
+        depth = 0
+        for char in def_str:
+            if char == '[':
+                depth += 1
+                current.append(char)
+            elif char == ']':
+                depth -= 1
+                current.append(char)
+            elif char == '|' and depth == 0:
+                parts.append(''.join(current).strip())
+                current = []
+            else:
+                current.append(char)
+        parts.append(''.join(current).strip())
+        return parts
+
     def parse_inner(def_str):
-        if 'list[' in def_str:
-            return parse_list(def_str)
-        elif 'dict[' in def_str:
-            return parse_dict(def_str)
-        elif '|' in def_str:
+        def_str = def_str.strip()
+        top_level_union_types = split_top_level_union_types(def_str)
+        if len(top_level_union_types) > 1:
             return parse_union(def_str)
+        elif def_str.startswith('list[') and def_str.endswith(']'):
+            return parse_list(def_str)
+        elif def_str.startswith('dict[') and def_str.endswith(']'):
+            return parse_dict(def_str)
         else:
             return TypeDefinition(def_str.strip(), definition=def_str)
 
     def parse_list(def_str):
         """ Parse a list type definition string into a TypeDefinition object.
         Examples:
-        list['Cookie'] 
+        list['Cookie']
         """
         if def_str.strip() == 'list':
             return TypeDefinition('list')
@@ -147,11 +170,11 @@ def parse_type_definition(definition):
         list[str] | str
         dict[str,Foo] | Bar
         """
-        types = [t.strip() for t in def_str.split('|')]
+        types = split_top_level_union_types(def_str)
         return TypeDefinition('union', [parse_inner(t) for t in types])
 
     # Remove class definition surrouding quotes if exists
-    # This happens when using deferred class declaration 
+    # This happens when using deferred class declaration
      #like foo: 'Bar' (instead of Foo: Bar)
     definition = definition.replace("'","")
     # Recursively parse the type definition
@@ -175,8 +198,12 @@ def select_type_definition_from_data(union_type_definition, data):
     # loop over union definitions
     for type_definition in union_type_definition.children:
         logging.debug(f"{type_definition}")
+        if data is None and type_definition.type_name.lower() in {"none", "nonetype"}:
+            logging.debug("none matched!")
+            selected_type = type_definition
+            break
         # data is primitive type
-        if data_type in ["str", "int", "float", "bool"]:
+        if data_type in ["str", "int", "float", "bool", "NoneType"]:
             logging.debug("str_data_type")
             if type_definition.type_name == data_type:
                 # matched
@@ -234,7 +261,7 @@ class CollectionResource:
     def from_dict(cls, data: dict) -> Any:
         """Deserializes from a dictionary.
         """
-        
+
         # Define an inner function that recursively handles the actual deserialization process
         def from_dict_inner(definition, data):
             """
@@ -262,7 +289,7 @@ class CollectionResource:
                 type_definition = parse_type_definition(definition)
             else:
                 raise ValueError(f"Invalid definition: {definition}")
-            
+
             # DISAMBIGUATE UNION
             if type_definition.type_category == "union":
                 # infer the type based on the content of the data
@@ -302,7 +329,7 @@ class CollectionResource:
                     return instance
                 else:
                     raise ValueError(f"Definition {definition} not found")
-            
+
             # PROCESS LIST TYPE
             elif type_definition.type_category == "list":
                 logging.debug(f"{bcolors.OKBLUE}-- LIST --{bcolors.ENDC}")
@@ -313,10 +340,10 @@ class CollectionResource:
                     values.append(from_dict_inner(list_type_definition, item))
                 logging.debug(f"{bcolors.OKBLUE}--> RETURN LIST {values}{bcolors.ENDC}")
                 return values
-            
+
             # PROCESS DICTIONARY TYPE
             # note: we do not have dict in the current model
-            elif type_definition.type_category== "dict": 
+            elif type_definition.type_category== "dict":
                 # TODO
                 logging.debug(f"{bcolors.OKBLUE}-- DICT --{values}{bcolors.ENDC}")
                 key_type, value_type = cls.__args__
@@ -344,144 +371,144 @@ class CollectionResource:
 
     @classmethod
     def load(cls, file_path: str):
-        with open(file_path, 'r') as file:
+        with open(file_path) as file:
             data = json.load(file)
-        return cls.from_dict(data)        
+        return cls.from_dict(data)
 
 @dataclass
 class Auth(CollectionResource):
-    type: str = None # apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm
+    type: str | None = None # apikey, awsv4, basic, bearer, digest, edgegrid, hawk, noauth, oauth1, oauth2, ntlm
     noauth: None = None
-    apikey: list['AuthAttribute'] = None
-    awsv4: list['AuthAttribute'] = None
-    basic: list['AuthAttribute'] = None
-    bearer: list['AuthAttribute'] = None
-    digest: list['AuthAttribute'] = None
-    edgegrid: list['AuthAttribute'] = None
-    hawk: list['AuthAttribute'] = None
-    ntlm: list['AuthAttribute'] = None
-    oauth1: list['AuthAttribute'] = None
-    oauth2: list['AuthAttribute'] = None
+    apikey: list[AuthAttribute] | None = None
+    awsv4: list[AuthAttribute] | None = None
+    basic: list[AuthAttribute] | None = None
+    bearer: list[AuthAttribute] | None = None
+    digest: list[AuthAttribute] | None = None
+    edgegrid: list[AuthAttribute] | None = None
+    hawk: list[AuthAttribute] | None = None
+    ntlm: list[AuthAttribute] | None = None
+    oauth1: list[AuthAttribute] | None = None
+    oauth2: list[AuthAttribute] | None = None
 
 @dataclass
 class AuthAttribute(CollectionResource):
-    key: str = None
-    value: str = None
-    type: str = None
+    key: str | None = None
+    value: str | None = None
+    type: str | None = None
 
 @dataclass
 class Body(CollectionResource):
-    mode: str = None # raw, urlencoded, formdata, file, graphql
-    raw: str = None
-    graphql: object = None
-    urlencoded: list[BodyUrlEncoded] = None
-    formdata: list[BodyFormData] = None
-    file: BodyFile = None
-    options: object = None
-    disabled: bool = None
+    mode: str | None = None # raw, urlencoded, formdata, file, graphql
+    raw: str | None = None
+    graphql: object | None = None
+    urlencoded: list[BodyUrlEncoded] | None = None
+    formdata: list[BodyFormData] | None = None
+    file: BodyFile | None = None
+    options: object | None = None
+    disabled: bool | None = None
 
 @dataclass
 class BodyFile(CollectionResource):
-    src: str = None
-    content: str = None
+    src: str | None = None
+    content: str | None = None
 
 @dataclass
 class BodyFormData(CollectionResource):
-    key: str = None
-    value: str = None # for type=text
-    src: list[str] | str = None # for type=file
-    disabled: bool = None
-    type: str = None # test | file
-    contentType: str = None
-    description : 'Description' | str = None
+    key: str | None = None
+    value: str | None = None # for type=text
+    src: list[str] | str | None = None # for type=file
+    disabled: bool | None = None
+    type: str | None = None # test | file
+    contentType: str | None = None
+    description: Description | str | None = None
 
 @dataclass
 class BodyUrlEncoded(CollectionResource):
-    key: str = None
-    value: str = None
-    disabled: bool = None
-    description: 'Description' | str = None
+    key: str | None = None
+    value: str | None = None
+    disabled: bool | None = None
+    description: Description | str | None = None
 
 @dataclass
 class Certificate(CollectionResource):
-    name: str = None
-    matches: list[str] = None
-    key: 'CertificateSrc' = None
-    cert: 'CertificateSrc' = None
-    passphrase: str = None
+    name: str | None = None
+    matches: list[str] | None = None
+    key: CertificateSrc | None = None
+    cert: CertificateSrc | None = None
+    passphrase: str | None = None
 
 @dataclass
 class CertificateSrc(CollectionResource):
-    src: str = None    
+    src: str | None = None
 
 @dataclass
 class Collection(CollectionResource):
-    info: 'Info' = None
-    item: list['Item'|'ItemGroup'] = field(default_factory=list)
-    event: list['Event'] = None
-    variable: list['Variable'] = None
-    auth: 'Auth' = None
-    protocolProfileBehavior: object = None
-    _postman_id: str = None
+    info: Info | None = None
+    item: list[Item | ItemGroup] = field(default_factory=list)
+    event: list[Event] | None = None
+    variable: list[Variable] | None = None
+    auth: Auth | None = None
+    protocolProfileBehavior: object | None = None
+    _postman_id: str | None = None
 
     def __post_init__(self):
-        if not self.info: 
+        if not self.info:
             self.info = Info()
-        
+
 @dataclass
 class Cookie(CollectionResource):
-    domain: str = None
-    expires: str = None
-    maxAge: str = None
+    domain: str | None = None
+    expires: str | None = None
+    maxAge: str | None = None
     hostOnly: bool = False
     httpOnly: bool = False
-    name: str = None
-    path: str = None
+    name: str | None = None
+    path: str | None = None
     secure: bool = False
     session: bool = False
-    value: str = None
-    extensions: list[Any] = None
+    value: str | None = None
+    extensions: list[Any] | None = None
 
 @dataclass
 class Description(CollectionResource):
-    content: str = None
-    type: str = None 
-    version: 'Version' | str = None
+    content: str | None = None
+    type: str | None = None
+    version: Version | str | None = None
 
 @dataclass
 class Event(CollectionResource):
-    id: str = None
-    listen: str = None
-    script: 'Script' = None
-    type: bool = None
+    id: str | None = None
+    listen: str | None = None
+    script: Script | None = None
+    type: bool | None = None
 
 @dataclass
 class Header(CollectionResource):
-    key: str = None
-    value: str = None
-    disabled: bool = None
-    description: 'Description' | str = None
+    key: str | None = None
+    value: str | None = None
+    disabled: bool | None = None
+    description: Description | str | None = None
 
 @dataclass
 class Info(CollectionResource):
-    name: str = None
-    _postman_id: str = None 
-    _exporter_id: str = None # EXPORTED BUT NOT IN JSON SCHEMA
-    _collection_link: str = None # EXPORTED BUT NOT IN JSON SCHEMA
-    description: 'Description' | str = None
-    version: 'Version' | str = None
+    name: str | None = None
+    _postman_id: str | None = None
+    _exporter_id: str | None = None # EXPORTED BUT NOT IN JSON SCHEMA
+    _collection_link: str | None = None # EXPORTED BUT NOT IN JSON SCHEMA
+    description: Description | str | None = None
+    version: Version | str | None = None
     schema: str = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 
 @dataclass
 class Item(CollectionResource):
-    id: str = None
-    name: str = None
-    description: 'Description' | str = None
-    variable: list['Variable'] = None
-    event: list['Event'] = None
-    request: 'Request' = None
-    response: list['Response'] = None
-    protocolProfileBehavior: object = None
+    id: str | None = None
+    name: str | None = None
+    description: Description | str | None = None
+    variable: list[Variable] | None = None
+    event: list[Event] | None = None
+    request: Request | None = None
+    response: list[Response] | None = None
+    protocolProfileBehavior: object | None = None
 
     def __post_init__(self):
         if not self.request:
@@ -529,21 +556,21 @@ class Item(CollectionResource):
 
 @dataclass
 class ItemGroup(CollectionResource): # item-group in JSON schema
-    name: str = None
-    description: 'Description' | str = None
-    variable: list['Variable'] = None
-    item: list['Item'] = field(default_factory=list)
-    event: list['Event'] = None
-    auth: 'Auth' = None
-    protocolProfileBehavior: object = None    
+    name: str | None = None
+    description: Description | str | None = None
+    variable: list[Variable] | None = None
+    item: list[Item | ItemGroup] = field(default_factory=list)
+    event: list[Event] | None = None
+    auth: Auth | None = None
+    protocolProfileBehavior: object | None = None
 
 @dataclass
 class ProxyConfig(CollectionResource): # proxy-config in JSON schema
-    match: str = None
-    host: str = None
-    port: int = None
+    match: str | None = None
+    host: str | None = None
+    port: int | None = None
     tunnel: bool = False
-    disabled: bool = None
+    disabled: bool | None = None
 
 @dataclass
 class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behavior in JSON schema
@@ -551,21 +578,21 @@ class ProtocolProfileBehavior(CollectionResource): # proxy-profile-behavior in J
     pass
 @dataclass
 class QueryParam(CollectionResource):
-    key: str = None
-    value: str = None
-    disabled: bool = None
-    description: 'Description' | str = None
+    key: str | None = None
+    value: str | None = None
+    disabled: bool | None = None
+    description: Description | str | None = None
 
 @dataclass
 class Request(CollectionResource):
-    url: 'URL' | str = None
-    auth: 'Auth' = None
-    proxy: 'ProxyConfig' = None
-    certificate: 'Certificate' = None
-    method: str = None # GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value
-    description: 'Description' | str = None
-    header: list['Header'] | str = None
-    body: 'Body' = None
+    url: URL | str | None = None
+    auth: Auth | None = None
+    proxy: ProxyConfig | None = None
+    certificate: Certificate | None = None
+    method: str | None = None # GET,PUT,POST,DELETE,PATCH,HEAD,OPTIONS,PROPFIND,VIEW or custom value
+    description: Description | str | None = None
+    header: list[Header] | str | None = None
+    body: Body | None = None
 
     def add_header(self, key, value, description=None):
         if not isinstance(self.header, list):
@@ -574,37 +601,37 @@ class Request(CollectionResource):
 
 @dataclass
 class Response(CollectionResource):
-    id: str = None
-    name: str = None # EXPORTED BUT NOT IN JSON SCHEMA
-    originalRequest: 'Request' = None
-    responseTime: str | int = None
-    timings: object = None
-    header: list['Header'] | str = None
-    cookie: list['Cookie'] = None
-    body: str = None
-    status: str = None
-    code: int = None
-    _postman_previewlanguage: str = None
+    id: str | None = None
+    name: str | None = None # EXPORTED BUT NOT IN JSON SCHEMA
+    originalRequest: Request | None = None
+    responseTime: str | int | None = None
+    timings: object | None = None
+    header: list[Header] | str | None = None
+    cookie: list[Cookie] | None = None
+    body: str | None = None
+    status: str | None = None
+    code: int | None = None
+    _postman_previewlanguage: str | None = None
 
 
 @dataclass
 class Script(CollectionResource):
-    id : str = None
-    type: str = None
-    exec: list[str] | str = None
-    src: URL | str = None
-    name: str = None
+    id: str | None = None
+    type: str | None = None
+    exec: list[str] | str | None = None
+    src: URL | str | None = None
+    name: str | None = None
 
 @dataclass
 class URL(CollectionResource):
-    raw: str = None
-    protocol: str = None
-    host: list[str] = None
-    path: list[str] = None
-    port: str = None
-    query: list['QueryParam'] = None
-    hash: str = None
-    variable: list['Variable'] = None
+    raw: str | None = None
+    protocol: str | None = None
+    host: str | list[str] | None = None
+    path: str | list[str] | None = None
+    port: str | int | None = None
+    query: list[QueryParam] | None = None
+    hash: str | None = None
+    variable: list[Variable] | None = None
 
     """
     Add a query parameter to this URL, initializing the query array if needed.
@@ -631,20 +658,20 @@ class URL(CollectionResource):
 
 @dataclass
 class Variable(CollectionResource):
-    id: str = None
-    key: str = None
-    value: Any = None
-    type: str = None # string, boolean, any, number
-    name: str = None
-    description: 'Description' | str = None
-    system: bool = None
-    disabled: bool = None
+    id: str | None = None
+    key: str | None = None
+    value: Any | None = None
+    type: str | None = None # string, boolean, any, number
+    name: str | None = None
+    description: Description | str | None = None
+    system: bool | None = None
+    disabled: bool | None = None
 
 @dataclass
 class Version(CollectionResource):
     major: int = 0
     minor: int = 0
     patch: int = 0
-    identifier: str = None
-    meta: Any = None
+    identifier: str | None = None
+    meta: Any | None = None
 

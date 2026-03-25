@@ -1,13 +1,14 @@
 
-from dartfx.postmanapi import postman_collection as pc
 import os
+
+from dartfx.postmanapi import postman_collection as pc
 
 
 def get_output_dir():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     return os.path.join(script_dir, "output")
 
-   
+
 def test_hello_world():
     # Collection
     collection = pc.Collection()

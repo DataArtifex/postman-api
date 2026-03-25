@@ -25,17 +25,6 @@ dependencies = [
   "requests>=2",
   "python-dotenv>=1.0",
 ]
-
-
-[project.optional-dependencies]
-langchain = [
-  "langchain>=0.3",
-  "langchain_core>=0.3",
-  "langchain_openai>=0.3",
-  "langchain_groq>=0.3",
-  "pydantic>=2"
-]
-
 [project.urls]
 Documentation = "https://github.com/DataArtifex/postman-api#readme"
 Issues = "https://github.com/DataArtifex/postman-api/issues"
@@ -150,3 +139,8 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.mypy]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
+namespace_packages = true
+explicit_package_bases = true

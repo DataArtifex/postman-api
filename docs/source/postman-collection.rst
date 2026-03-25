@@ -6,7 +6,7 @@ This package includes Python classes that can be used to programmatically intera
 
 The initial implementation used traditional Python `Data Classes <https://docs.python.org/3/library/dataclasses.html>`_.
 
-The package is being rewritten using `Pydantic <https://docs.pydantic.dev/latest/>`_ to strengthen features/validation and facilitate integration with other packages and frameworks, particularly LangChain.
+The package is being rewritten using `Pydantic <https://docs.pydantic.dev/latest/>`_ to strengthen features and validation.
 
 
 Create a collection from scratch

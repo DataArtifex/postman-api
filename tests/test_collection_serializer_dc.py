@@ -1,6 +1,7 @@
 
-from dartfx.postmanapi import postman_collection_dc as pc
 import os
+
+from dartfx.postmanapi import postman_collection_dc as pc
 
 
 def get_output_dir():

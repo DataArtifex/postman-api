@@ -1,6 +1,8 @@
 import json
-from dartfx.postmanapi import postman_collection as pc
 import os
+
+from dartfx.postmanapi import postman_collection as pc
+
 
 def get_data_dir():
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -14,7 +16,7 @@ def test_hello_world():
     filename = "Hello World.postman_collection.json"
     # deserialize
     filepath = os.path.join(get_data_dir(), filename)
-    with open(filepath, 'r') as file:
+    with open(filepath) as file:
         data = json.load(file)
     collection = pc.Collection.model_validate(data)
     print(collection)
@@ -29,7 +31,7 @@ def test_socrata_sfo_wr8u_xric():
     filename = "socrata_sfo_wr8u-xric.json"
     # deserialize
     filepath = os.path.join(get_data_dir(), filename)
-    with open(filepath, 'r') as file:
+    with open(filepath) as file:
         data = json.load(file)
     collection = pc.Collection.model_validate(data, strict=True)
     #print(collection)
