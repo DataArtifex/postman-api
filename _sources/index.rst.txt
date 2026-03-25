@@ -7,7 +7,6 @@ Data Artifex Postman API
 
    postman
    postman-collection
-   langchain
 
    modules
 
