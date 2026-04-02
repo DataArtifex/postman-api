@@ -33,7 +33,7 @@ Create a collection from scratch
    collection.save(filename)
 
 
-Loading an exported collection 
+Loading an exported collection
 ------------------------------
 
 .. code-block:: python
@@ -46,4 +46,3 @@ Loading an exported collection
    # ...do something...
    # save (or import/update via PostmanAPI)
    collection.save("bar.json")
-

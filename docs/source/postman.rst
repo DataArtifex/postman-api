@@ -6,7 +6,7 @@ The Postman API package provides various classes to facilitate the interaction w
 Postman API
 -----------
 
-The PostmanAPI class is at the foundation of the package and manages all interactions with the Postman API. 
+The PostmanAPI class is at the foundation of the package and manages all interactions with the Postman API.
 
 It is used to:
 

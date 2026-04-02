@@ -8,10 +8,10 @@
 import os
 import sys
 
-project = 'Data Artifex Postman API'
-copyright = '2024, Pascal Heus'
-author = 'Pascal Heus'
-release = '0.1.0'
+project = "Data Artifex Postman API"
+copyright = "2024, Pascal Heus"
+author = "Pascal Heus"
+release = "0.1.0"
 
 #
 # Add search path for autogen
@@ -22,19 +22,13 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'sphinx_copybutton',
-    'myst_parser'
-]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.viewcode", "sphinx_copybutton", "myst_parser"]
 
-templates_path = ['_templates']
-exclude_patterns = []
+templates_path = ["_templates"]
+exclude_patterns: list[str] = []
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_rtd_theme"
-html_static_path = ['_static']
+html_static_path = ["_static"]
