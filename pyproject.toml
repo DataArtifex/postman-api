@@ -21,9 +21,9 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = [
-  "pydantic>=2",
-  "requests>=2",
-  "python-dotenv>=1.0",
+  "pydantic>=2.10.0",
+  "requests>=2.32.0",
+  "python-dotenv>=1.0.0",
 ]
 [project.urls]
 Documentation = "https://github.com/DataArtifex/postman-api#readme"
@@ -45,20 +45,20 @@ path = "src/dartfx/postmanapi/__about__.py"
 
 [dependency-groups]
 dev = [
-  "coverage[toml]>=6.5",
+  "coverage[toml]>=7.0.0",
   "pytest>=9",
-  "pytest-benchmark>=4.0.0",
+  "pytest-benchmark>=5.0.0",
   "mypy>=1.0.0",
   "types-requests>=2.0.0",
   "python-dotenv>=1.0.0",
   "ruff>=0.3.0",
-  "pre-commit>=3.0.0",
+  "pre-commit>=4.0.0",
 ]
 docs = [
-  "sphinx>=7.0",
-  "sphinx_rtd_theme>=2.0",
+  "sphinx>=8.0.0",
+  "sphinx-rtd-theme>=3.0.0",
   "myst-parser>=5.0.0",
-  "sphinx-copybutton>=0.5",
+  "sphinx-copybutton>=0.5.2",
 ]
 
 [tool.hatch.envs.default]
@@ -142,6 +142,11 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.mypy]
-mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
-namespace_packages = true
+python_version = "3.12"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+show_error_codes = true
+mypy_path = "src"
 explicit_package_bases = true
+plugins = ["pydantic.mypy"]

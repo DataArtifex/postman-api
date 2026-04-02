@@ -66,6 +66,7 @@ jobs:
             **/uv.lock
             **/pyproject.toml
 
+      # setup-uv supports a python-version input; it sets UV_PYTHON for you.
       - name: Select Python for uv
         shell: bash
         run: echo "UV_PYTHON=3.12" >> "$GITHUB_ENV"
