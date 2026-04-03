@@ -11,6 +11,7 @@ def get_output_dir():
 def test_hello_world():
     # Collection
     collection = pc.Collection()
+    assert collection.info is not None
     collection.info.name = "Hello World"
     # Item
     item = pc.Item(name="Hello World")
@@ -23,4 +24,5 @@ def test_hello_world():
     # save
     filename = os.path.join(get_output_dir(), "hello_world.pd.json")
     collection.save(filename)
+    assert collection.info is not None
     assert collection.info.name == "Hello World"

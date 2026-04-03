@@ -127,8 +127,8 @@ class PostmanApi:
             params=params,
             json=data,
         )
-        data = response.json()
-        return data["collection"]["uid"]
+        response_data: dict[str, Any] = response.json()
+        return response_data["collection"]["uid"]
 
     def delete_collection(self, collection_id) -> str:
         """Delete a Postman collection.
@@ -247,9 +247,9 @@ class PostmanApi:
             f"Create folder {name} in collection {collection_id}",
             json=folder_data,
         )
-        folder_data = response.json()
+        response_data: dict[str, Any] = response.json()
         # transferring folder requires uid, so return that instead of just id
-        uid = folder_data["data"]["owner"] + "-" + folder_data["data"]["id"]
+        uid = response_data["data"]["owner"] + "-" + response_data["data"]["id"]
         return uid
 
     def get_folder(self, collection_id, folder_id) -> dict:
@@ -455,8 +455,8 @@ class PostmanApi:
         }
         # call API
         response = self.post_request("workspaces", f"Create workspace {name}", json=data)
-        data = response.json()
-        return data["workspace"]["id"]
+        response_data: dict[str, Any] = response.json()
+        return response_data["workspace"]["id"]
 
     def delete_workspace(self, workspace_id) -> str:
         """Delete a Postman workspace
@@ -763,6 +763,7 @@ class WorkspaceManager:
         return self.global_variables
 
     def update_workspace(self):
+        assert self._data is not None
         data = self._api.update_workspace(self._id, self._data["name"], self._data["description"], self._data["type"])
         return data
 
@@ -1040,7 +1041,7 @@ class FolderManager:
     _tags: list[str] | None  # the collection tags as an array (enterprise only)
 
     def __init__(self, api: PostmanApi, collection_id: str, folder_id, refresh=True):
-        self.collection_id = collection_id
+        self._collection_id = collection_id
         self._id = folder_id
         self._api = api
         self._data = None
@@ -1057,7 +1058,7 @@ class FolderManager:
 
     def refresh_data(self):
         """Refreshes the cached collection data from the API"""
-        data = self.get_collection()
+        data = self._api.get_collection(self._collection_id)
         self._data = data["collection"]
 
     def create_folder(self, name: str, description: str | None = None):

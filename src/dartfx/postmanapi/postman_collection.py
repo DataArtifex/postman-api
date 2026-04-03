@@ -20,7 +20,7 @@ Known issues:
 from __future__ import annotations
 
 import json
-import urllib
+import urllib.parse
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
@@ -154,7 +154,7 @@ class Collection(CollectionResource):
         """Callable discriminator for a list of Foo and Bar"""
         if not isinstance(value, list):
             raise ValueError("'item' must be a list")
-        parsed_items = []
+        parsed_items: list[Item | ItemGroup] = []
         for item in value:
             if isinstance(item, dict):
                 if "request" in item:
@@ -286,7 +286,7 @@ class ItemGroup(CollectionResource):  # item-group in JSON schema
         """Callable discriminator for a list of Item and ItemGroup"""
         if not isinstance(value, list):
             raise ValueError("'item' must be a list")
-        parsed_items = []
+        parsed_items: list[Item | ItemGroup] = []
         for item in value:
             if isinstance(item, dict):
                 if "request" in item:

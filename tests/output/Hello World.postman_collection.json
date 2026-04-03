@@ -1,14 +1,38 @@
 {
     "info": {
         "name": "Hello World",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "_postman_id": "3673316a-9a35-4b0d-a148-3566b490798d",
         "_exporter_id": "24683461",
         "_collection_link": "https://www.postman.com/postman/workspace/postman-team-collections/collection/4946945-3673316a-9a35-4b0d-a148-3566b490798d?action=share&source=collection_link&creator=24683461",
-        "description": "A simple collection with one request that has tests to validate response. You can use this collection as a entry-levle example to demonstrate Postman's debugging capabilities.",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+        "description": "A simple collection with one request that has tests to validate response. You can use this collection as a entry-levle example to demonstrate Postman's debugging capabilities."
     },
     "item": [
         {
+            "request": {
+                "url": {
+                    "raw": "https://postman-echo.com/post",
+                    "protocol": "https",
+                    "host": [
+                        "postman-echo",
+                        "com"
+                    ],
+                    "path": [
+                        "post"
+                    ]
+                },
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n\t\"message\": \"Hello, World!\"\n}"
+                }
+            },
             "name": "Hello World",
             "event": [
                 {
@@ -44,30 +68,6 @@
                     }
                 }
             ],
-            "request": {
-                "url": {
-                    "raw": "https://postman-echo.com/post",
-                    "protocol": "https",
-                    "host": [
-                        "postman-echo",
-                        "com"
-                    ],
-                    "path": [
-                        "post"
-                    ]
-                },
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n\t\"message\": \"Hello, World!\"\n}"
-                }
-            },
             "response": []
         }
     ],

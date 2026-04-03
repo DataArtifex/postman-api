@@ -14,10 +14,3 @@ Postman Collection (Pydantic)
    :members:
    :undoc-members:
    :show-inheritance:
-
-Postman Collection (Data Classes)
----------------------------------
-.. automodule:: dartfx.postmanapi.postman_collection_dc
-   :members:
-   :undoc-members:
-   :show-inheritance:

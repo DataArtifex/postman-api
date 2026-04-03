@@ -23,6 +23,7 @@ def test_hello_world():
     collection = pc.Collection.model_validate(data)
     print(collection)
     # check
+    assert collection.info is not None
     assert collection.info.name == "Hello World"
     assert collection.item[0].name == "Hello World"
     # serialize
@@ -40,6 +41,7 @@ def test_socrata_sfo_wr8u_xric():
     # print(collection)
     # print(collection.item[0])
     # check
+    assert collection.info is not None
     assert collection.info.name == "🔢 Fire Incidents [wr8u-xric]"
     assert collection.item[0].name == "Metadata"
     # assert collection.item[0].item
